@@ -19,7 +19,7 @@
     $now = date('Y-m-d\Th:i:s.v', time());
     $EightDaysAgo = date("Y-m-d", strtotime('-8 day', time()));
 
-    $url = 'https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=GetMonumentByChangeDate&CRS=http://www.opengis.net/def/crs/epsg/0/4326&minDateTime=' . $EightDaysAgo . '&maxDateTime=' . $now . '&count=' . $settings['updater']['batchSize'] . '&startIndex=' . $startIndex;
+    $url = $settings['updater']['baseUrl'] . '?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&STOREDQUERY_ID=GetMonumentByChangeDate&CRS=http://www.opengis.net/def/crs/epsg/0/4326&minDateTime=' . $EightDaysAgo . '&maxDateTime=' . $now . '&count=' . $settings['updater']['batchSize'] . '&startIndex=' . $startIndex;
     $logger->info('Startindex is now ' . $startIndex);
     $logger->info('Request to ' . $url);
 

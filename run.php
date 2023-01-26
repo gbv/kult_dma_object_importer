@@ -54,7 +54,7 @@ $logger->pushHandler(new StreamHandler($settings['logger']['path'], $settings['l
 // send logs via mail
 $mailHandler = new Monolog\Handler\NativeMailerHandler(
     $settings['logger']['mailRecipient'],
-    '[ERROR] : DENKMALATLAS - WFS-Auto-Pull',
+    '[Denkmalatlas] WFS Auto Pull Results',
     $settings['logger']['mailSender'],
     $settings['logger']['defaultLogLevel'],
     true,
@@ -78,9 +78,9 @@ $client = new Client([
 
 // basic availability-tests
 $tests = [
-  'Schema' => 'https://www.adabweb.niedersachsen.de/adabweb/schema/adabweb/denkgml.xsd',
-  'GetCapabilities' => 'https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities',
-  'DescribeStoredQueries' => 'https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeStoredQueries'
+  'Schema' => 'http://geoportal.geodaten.niedersachsen.de/adabweb/schema/ogc/wfs/2.0/wfs.xsd',
+  'GetCapabilities' => $settings['updater']['baseUrl'] . '?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities',
+  'DescribeStoredQueries' => $settings['updater']['baseUrl'] . '?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeStoredQueries'
 ];
 foreach($tests as $testKey=>$testURL) {
   $logger->debug('ask for ' . $testKey . ' @ ' . $testURL);

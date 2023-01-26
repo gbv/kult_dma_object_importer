@@ -22,7 +22,18 @@
     // https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet&CRS=http://www.opengis.net/def/crs/EPSG/0/4326&DataSetIdCode=ADABObjekte&DataSetIdNamespace=NI&Language=ger&count=20000&startIndex=0
 
     //$url = 'https://services.interactive-instruments.de/adab-ni-xs/dda-wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet&CRS=http://www.opengis.net/def/crs/EPSG/0/4326&DataSetIdCode=ADABObjekte&DataSetIdNamespace=NI&Language=ger&count=' . $settings['updater']['batchSize'] . '&startIndex=' . $startIndex;
-    $url = 'https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet&CRS=http://www.opengis.net/def/crs/EPSG/0/4326&DataSetIdCode=ADABObjekte&DataSetIdNamespace=NI&Language=ger&count=' . $settings['updater']['batchSize'] . '&startIndex=' . $startIndex;
+
+    $url = $settings['updater']['baseUrl'];
+    $url += '?SERVICE=WFS';
+    $url += '&VERSION=2.0.0';
+    $url += '&REQUEST=GetFeature';
+    $url += '&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet';
+    $url += '&CRS=http://www.opengis.net/def/crs/EPSG/0/4326';
+    $url += '&DataSetIdCode=ADABObjekte';
+    $url += '&DataSetIdNamespace=NI';
+    $url += '&Language=ger';
+    $url += '&count=' . $settings['updater']['batchSize'];
+    $url += '&startIndex=' . $startIndex;
 
     $logger->info('Startindex is now ' . $startIndex);
     $logger->info('Request to ' . $url);

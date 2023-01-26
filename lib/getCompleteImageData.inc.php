@@ -7,7 +7,13 @@
 function getCompleteImageData() {
     global $settings, $logger, $client;
     $allImages = array();
-    $url = 'https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&TYPENAMES=Image&';
+
+    $url = $settings['updater']['baseUrl'];
+    $url += '?SERVICE=WFS';
+    $url += '&VERSION=2.0.0';
+    $url += '&REQUEST=GetFeature';
+    $url += '&TYPENAMES=denkxml:Image';
+
     $logger->info('Downloading all image-information');
     $logger->info('Request to ' . $url);
 
@@ -66,7 +72,7 @@ function getCompleteImageData() {
       }
       if(!isset($allImages[$belongingADABRecord])) {
         $allImages[$belongingADABRecord] = '';
-      }      
+      }
       $imageString = '<image preferred="' . $prefStatus . '"><licence>' . $licence . '</licence><rights>' . $rights . '</rights><creator>' . $creator . '</creator><standard url="' . $imageUrl . '" type="image/jpeg"/><description>' . $description . '</description></image>';
       // put preferred image to start
       if($prefStatus) {
