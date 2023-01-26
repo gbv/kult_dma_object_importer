@@ -2,6 +2,7 @@
 <?php
 
 require '/opt/digiverso/kult_dma_object_importer/vendor/autoload.php';
+require '/opt/digiverso/kult_dma_object_importer/config/sensitive_settings.php';
 
 use Monolog\Logger;
 use Monolog\ErrorHandler;
@@ -40,7 +41,31 @@ else {
   $type = 'full';
 }
 
-require '/opt/digiverso/kult_dma_object_importer/config/project_settings.php';
+$settings = [
+  'logger' => [
+      'name' => 'wfs_auto_pull',
+      'path' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . $now . '.log',
+      'originalXMLPath' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . 'original_xml',
+      'splittedXMLPath' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . 'splitted_xml',
+      'defaultLogLevel' => Logger::DEBUG,
+      'mailTriggerLevel' => Logger::WARNING,
+      'mailRecipient' => $sensitive_settings['recipient'],
+      'mailSender' => $sensitive_settings['sender']
+  ],
+  'updater' => [
+    'authUser' => $sensitive_settings['username'],
+    'authPwd' => $sensitive_settings['password'],
+    'type' => $type,
+    'batchSize' => 10000,
+    'maxCount' => (isset($argv[2]) == true ? $argv[2] : '10000000000'),
+    'hotfolder' => '/opt/digiverso/viewer/hotfolder-test/',
+    'baseUrl' => 'https://www.geobasisdaten.niedersachsen.de/doorman/auth/nld_dda-vektor'
+  ],
+  'deleter' => [
+    'indexedDenkxwebFolder' => '/opt/digiverso/viewer/indexed_denkxweb/',
+    'hotfolder' => '/opt/digiverso/viewer/hotfolder/'
+  ]
+];
 
 include('lib/exception_routine.inc.php');
 set_exception_handler('exception_routine');
