@@ -1,0 +1,3 @@
+config/project_settings.php
+vendor
+logs/*
