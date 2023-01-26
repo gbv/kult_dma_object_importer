@@ -88,7 +88,7 @@
         }
 
         $xmlStrMonument = str_replace('gml:id', 'gml_id', $xmlStrMonument);
-        $xmlStrMonument = str_replace('<monument ', '<?xml version="1.0" encoding="utf-8" ?><monuments xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns="http://denkxweb.de/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.rjm.de/denkxweb/denkxml https://services.interactive-instruments.de/adab-ni-xs/schema/denkgml/0.9/denkgml.xsd http://www.opengis.net/wfs/2.0 https://services.interactive-instruments.de/adab-ni-xs/schema/ogc/wfs/2.0/wfs.xsd http://www.opengis.net/gml/3.2 https://services.interactive-instruments.de/adab-ni-xs/schema/ogc/gml/3.2.1/gml.xsd"><monument ', $xmlStrMonument);
+        $xmlStrMonument = str_replace('<monument ', $common_settings['xmlHEader'] . '<monuments ' .  $common_settings['monumentsNameSpace'] . '><monument ', $xmlStrMonument);
         $xmlStrMonument = str_replace('</monument>', '</monument></monuments>', $xmlStrMonument);
         $monument = simplexml_load_string( $xmlStrMonument );
         if($monument !== false) {

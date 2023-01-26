@@ -3,6 +3,7 @@
 
 require '/opt/digiverso/kult_dma_object_importer/vendor/autoload.php';
 require '/opt/digiverso/kult_dma_object_importer/config/sensitive_settings.php';
+require '/opt/digiverso/kult_dma_object_importer/config/common_settings.php';
 
 use Monolog\Logger;
 use Monolog\ErrorHandler;
