@@ -9,10 +9,10 @@ function getCompleteImageData() {
     $allImages = array();
 
     $url = $settings['updater']['baseUrl'];
-    $url += '?SERVICE=WFS';
-    $url += '&VERSION=2.0.0';
-    $url += '&REQUEST=GetFeature';
-    $url += '&TYPENAMES=denkxml:Image';
+    $url .= '?SERVICE=WFS';
+    $url .= '&VERSION=2.0.0';
+    $url .= '&REQUEST=GetFeature';
+    $url .= '&TYPENAMES=denkxml:Image';
 
     $logger->info('Downloading all image-information');
     $logger->info('Request to ' . $url);
