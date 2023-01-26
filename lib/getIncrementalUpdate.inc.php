@@ -19,7 +19,17 @@
     $now = date('Y-m-d\Th:i:s.v', time());
     $EightDaysAgo = date("Y-m-d", strtotime('-8 day', time()));
 
-    $url = $settings['updater']['baseUrl'] . '?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&STOREDQUERY_ID=GetMonumentByChangeDate&CRS=http://www.opengis.net/def/crs/epsg/0/4326&minDateTime=' . $EightDaysAgo . '&maxDateTime=' . $now . '&count=' . $settings['updater']['batchSize'] . '&startIndex=' . $startIndex;
+    $url = $settings['updater']['baseUrl'];
+    $url += '?SERVICE=WFS';
+    $url += '&VERSION=2.0.0';
+    $url += '&REQUEST=GetFeature';
+    $url += '&STOREDQUERY_ID=GetMonumentByChangeDate';
+    $url += '&CRS=http://www.opengis.net/def/crs/epsg/0/4326';
+    $url += '&minDateTime=' . $EightDaysAgo;
+    $url += '&maxDateTime=' . $now;
+    $url += '&count=' . $settings['updater']['batchSize'];
+    $url += '&startIndex=' . $startIndex;
+
     $logger->info('Startindex is now ' . $startIndex);
     $logger->info('Request to ' . $url);
 
