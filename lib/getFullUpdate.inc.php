@@ -88,7 +88,7 @@
         }
 
         $xmlStrMonument = str_replace('gml:id', 'gml_id', $xmlStrMonument);
-        $xmlStrMonument = str_replace('<monument ', $common_settings['xmlHEader'] . '<monuments ' .  $common_settings['monumentsNameSpace'] . '><monument ', $xmlStrMonument);
+        $xmlStrMonument = str_replace('<monument ', $common_settings['xmlHeader'] . '<monuments ' .  $common_settings['monumentsNameSpace'] . '><monument ', $xmlStrMonument);
         $xmlStrMonument = str_replace('</monument>', '</monument></monuments>', $xmlStrMonument);
         $monument = simplexml_load_string( $xmlStrMonument );
         if($monument !== false) {
