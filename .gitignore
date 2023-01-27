@@ -1,3 +1,4 @@
 config/sensitive_settings.php
 vendor
+local
 logs/*

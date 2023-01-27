@@ -3,9 +3,9 @@
   // common values
   // one place to define them
 
-  $monumentsXmlHEader  = '<?xml version="1.0" encoding="utf-8" ?>';
+  $monumentsXmlHeader  = '<?xml version="1.0" encoding="utf-8" ?>';
 
-  $monumentsNameSpace .=   'xmlns:gml="http://www.opengis.net/gml/3.2" ';
+  $monumentsNameSpace  =   'xmlns:gml="http://www.opengis.net/gml/3.2" ';
   $monumentsNameSpace .=   'xmlns:wfs="http://www.opengis.net/wfs/2.0" ';
   $monumentsNameSpace .=   'xmlns:xlink="http://www.w3.org/1999/xlink" ';
   $monumentsNameSpace .=   'xmlns="http://www.rjm.de/denkxweb/denkxml" ';
@@ -21,8 +21,8 @@
 
   // make an key value list for those settings
   $common_settings = [
-    'xmlHeader' => $monumentsXmlHEader,
-    'monumentNameSpace' => $monumentsNameSpace
+    'xmlHeader' => $monumentsXmlHeader,
+    'monumentsNameSpace' => $monumentsNameSpace
   ];
 
 ?>
