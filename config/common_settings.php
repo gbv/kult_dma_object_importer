@@ -8,7 +8,8 @@
   $monumentsNameSpace  =   'xmlns:gml="http://www.opengis.net/gml/3.2" ';
   $monumentsNameSpace .=   'xmlns:wfs="http://www.opengis.net/wfs/2.0" ';
   $monumentsNameSpace .=   'xmlns:xlink="http://www.w3.org/1999/xlink" ';
-  $monumentsNameSpace .=   'xmlns="http://www.rjm.de/denkxweb/denkxml" ';
+  // do not change the xmlns, it is used by indexer to identify the denkxweb file type
+  $monumentsNameSpace .=   'xmlns="http://denkxweb.de/" ';
   $monumentsNameSpace .=   'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
   $monumentsNameSpace .=   'xsi:schemaLocation="';
   $monumentsNameSpace .=     'http://www.rjm.de/denkxweb/denkxml ';
