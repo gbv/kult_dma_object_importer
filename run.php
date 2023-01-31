@@ -59,7 +59,7 @@ $settings = [
     'type' => $type,
     'batchSize' => 10000,
     'maxCount' => (isset($argv[2]) == true ? $argv[2] : '10000000000'),
-    'hotfolder' => '/opt/digiverso/viewer/hotfolder-test/',
+    'hotfolder' => '/opt/digiverso/viewer/hotfolder/',
     'baseUrl' => 'https://www.geobasisdaten.niedersachsen.de/doorman/auth/nld_dda-vektor'
   ],
   'deleter' => [
@@ -80,7 +80,7 @@ $logger->pushHandler(new StreamHandler($settings['logger']['path'], $settings['l
 // send logs via mail
 $mailHandler = new Monolog\Handler\NativeMailerHandler(
     $settings['logger']['mailRecipient'],
-    '[Denkmalatlas] WFS Auto Pull Results',
+    '[Denkmalatlas] WFS Import Status',
     $settings['logger']['mailSender'],
     $settings['logger']['defaultLogLevel'],
     true,
