@@ -19,7 +19,17 @@
     $now = date('Y-m-d\Th:i:s.v', time());
     $EightDaysAgo = date("Y-m-d", strtotime('-8 day', time()));
 
-    $url = 'https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=GetMonumentByChangeDate&CRS=http://www.opengis.net/def/crs/epsg/0/4326&minDateTime=' . $EightDaysAgo . '&maxDateTime=' . $now . '&count=' . $settings['updater']['batchSize'] . '&startIndex=' . $startIndex;
+    $url = $settings['updater']['baseUrl'];
+    $url .= '?SERVICE=WFS';
+    $url .= '&VERSION=2.0.0';
+    $url .= '&REQUEST=GetFeature';
+    $url .= '&STOREDQUERY_ID=GetMonumentByChangeDate';
+    $url .= '&CRS=http://www.opengis.net/def/crs/epsg/0/4326';
+    $url .= '&minDateTime=' . $EightDaysAgo;
+    $url .= '&maxDateTime=' . $now;
+    $url .= '&count=' . $settings['updater']['batchSize'];
+    $url .= '&startIndex=' . $startIndex;
+
     $logger->info('Startindex is now ' . $startIndex);
     $logger->info('Request to ' . $url);
 
@@ -68,7 +78,7 @@
         }
 
         $xmlStrMonument = str_replace('gml:id', 'gml_id', $xmlStrMonument);
-        $xmlStrMonument = str_replace('<monument ', '<?xml version="1.0" encoding="utf-8" ?><monuments xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://denkxweb.de/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rjm.de/denkxweb/denkxml https://services.interactive-instruments.de/adab-ni-xs/schema/adabweb/denkgml.xsd http://www.opengis.net/wfs/2.0 https://services.interactive-instruments.de/adab-ni-xs/schema/ogc/wfs/2.0/wfs.xsd http://www.opengis.net/gml/3.2 https://services.interactive-instruments.de/adab-ni-xs/schema/ogc/gml/3.2.1/gml.xsd"><monument ', $xmlStrMonument);
+        $xmlStrMonument = str_replace('<monument ', $common_settings['xmlHeader'] . '<monuments ' .  $common_settings['monumentsNameSpace'] . '><monument ', $xmlStrMonument);
         $xmlStrMonument = str_replace('</monument>', '</monument></monuments>', $xmlStrMonument);
         $monument = simplexml_load_string( $xmlStrMonument );
         if($monument !== false) {

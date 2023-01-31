@@ -2,6 +2,8 @@
 <?php
 
 require '/opt/digiverso/kult_dma_object_importer/vendor/autoload.php';
+require '/opt/digiverso/kult_dma_object_importer/config/sensitive_settings.php';
+require '/opt/digiverso/kult_dma_object_importer/config/common_settings.php';
 
 use Monolog\Logger;
 use Monolog\ErrorHandler;
@@ -40,7 +42,31 @@ else {
   $type = 'full';
 }
 
-require '/opt/digiverso/kult_dma_object_importer/config/project_settings.php';
+$settings = [
+  'logger' => [
+      'name' => 'wfs_auto_pull',
+      'path' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . $now . '.log',
+      'originalXMLPath' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . 'original_xml',
+      'splittedXMLPath' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . 'splitted_xml',
+      'defaultLogLevel' => Logger::DEBUG,
+      'mailTriggerLevel' => Logger::WARNING,
+      'mailRecipient' => $sensitive_settings['recipient'],
+      'mailSender' => $sensitive_settings['sender']
+  ],
+  'updater' => [
+    'authUser' => $sensitive_settings['username'],
+    'authPwd' => $sensitive_settings['password'],
+    'type' => $type,
+    'batchSize' => 10000,
+    'maxCount' => (isset($argv[2]) == true ? $argv[2] : '10000000000'),
+    'hotfolder' => '/opt/digiverso/viewer/hotfolder-test/',
+    'baseUrl' => 'https://www.geobasisdaten.niedersachsen.de/doorman/auth/nld_dda-vektor'
+  ],
+  'deleter' => [
+    'indexedDenkxwebFolder' => '/opt/digiverso/viewer/indexed_denkxweb/',
+    'hotfolder' => '/opt/digiverso/viewer/hotfolder/'
+  ]
+];
 
 include('lib/exception_routine.inc.php');
 set_exception_handler('exception_routine');
@@ -54,7 +80,7 @@ $logger->pushHandler(new StreamHandler($settings['logger']['path'], $settings['l
 // send logs via mail
 $mailHandler = new Monolog\Handler\NativeMailerHandler(
     $settings['logger']['mailRecipient'],
-    '[ERROR] : DENKMALATLAS - WFS-Auto-Pull',
+    '[Denkmalatlas] WFS Auto Pull Results',
     $settings['logger']['mailSender'],
     $settings['logger']['defaultLogLevel'],
     true,
@@ -78,9 +104,9 @@ $client = new Client([
 
 // basic availability-tests
 $tests = [
-  'Schema' => 'https://www.adabweb.niedersachsen.de/adabweb/schema/adabweb/denkgml.xsd',
-  'GetCapabilities' => 'https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities',
-  'DescribeStoredQueries' => 'https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeStoredQueries'
+  'Schema' => 'http://geoportal.geodaten.niedersachsen.de/adabweb/schema/ogc/wfs/2.0/wfs.xsd',
+  'GetCapabilities' => $settings['updater']['baseUrl'] . '?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities',
+  'DescribeStoredQueries' => $settings['updater']['baseUrl'] . '?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeStoredQueries'
 ];
 foreach($tests as $testKey=>$testURL) {
   $logger->debug('ask for ' . $testKey . ' @ ' . $testURL);
