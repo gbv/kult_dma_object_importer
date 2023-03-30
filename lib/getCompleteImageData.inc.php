@@ -73,7 +73,18 @@ function getCompleteImageData() {
       if(!isset($allImages[$belongingADABRecord])) {
         $allImages[$belongingADABRecord] = '';
       }
-      $imageString = '<image preferred="' . $prefStatus . '"><licence>' . $licence . '</licence><rights>' . $rights . '</rights><creator>' . $creator . '</creator><standard url="' . $imageUrl . '" type="image/jpeg"/><description>' . $description . '</description></image>';
+      $yearOfOrigin = '';
+      if(isset($image->yearOfOrigin)) {
+        $yearOfOrigin = $image->yearOfOrigin;
+      }
+      $imageString  = '<image preferred="' . $prefStatus . '">';
+      $imageString .= '<licence>' . $licence . '</licence>';
+      $imageString .= '<rights>' . $rights . '</rights>';
+      $imageString .= '<creator>' . $creator . '</creator>';
+      $imageString .= '<standard url="' . $imageUrl . '" type="image/jpeg"/>';
+      $imageString .= '<description>' . $description . '</description>';
+      $imageString .= '<yearOfOrigin>' . $yearOfOrigin . '</yearOfOrigin>';
+      $imageString .= '</image>';
       // put preferred image to start
       if($prefStatus) {
         $allImages[$belongingADABRecord] =  $imageString . $allImages[$belongingADABRecord];
