@@ -1,6 +1,6 @@
 <?php
   $monumentsCounter = 0;
-  $monumentsCounterPutToHotfolder++;
+  $monumentsCounterPutToHotfolder=0;
   $startTime = microtime(true);
 
   //////////////////////////////////////////////////////////////////////
