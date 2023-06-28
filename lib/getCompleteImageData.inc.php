@@ -10,7 +10,7 @@ function getCompleteImageData() {
 
     $allDone = false;
     $offset = 0;
-    $stepSize = 1000;
+    $stepSize = 10000;
     $downloadPart = 1;
 
     while ( !$allDone ) {
@@ -103,6 +103,7 @@ function getCompleteImageData() {
 
       $logger->info('This batch took ' . (microtime(true) - $startTime) . ' seconds');
       $offset += $stepSize;
+      $downloadPart++;
       // break if the last iteration contain less objects than our batchsize has
       // it means, we have everything now
       if( count($images) < $stepSize ) {
