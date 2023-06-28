@@ -128,6 +128,8 @@
 
     $logger->info('This batch took ' . (microtime(true) - $startTime) . ' seconds');
     $startIndex += $settings['updater']['batchSize'];
+    // break if the last iteration contain less objects than our batchsize has
+    // it means, we have everything now
     if($countOfRecordsInXMLFile < $settings['updater']['batchSize']) {
       $ready = true;
     }
