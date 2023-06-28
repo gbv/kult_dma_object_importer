@@ -10,6 +10,8 @@ function getCompleteImageData() {
 
     $allDone = false;
     $offset = 0;
+    $stepSize = 1000;
+    $downloadPart = 1;
 
     while ( !$allDone ) {
 
@@ -18,10 +20,10 @@ function getCompleteImageData() {
       $url .= '&VERSION=2.0.0';
       $url .= '&REQUEST=GetFeature';
       $url .= '&TYPENAMES=denkxml:Image';
-      $url .= '&count=' . $settings['updater']['batchSize'];
+      $url .= '&count=' . $stepSize;
       $url .= '&startIndex=' . $offset;
 
-      $logger->info('Downloading image-information from ' . $offset . ' to ' . $settings['updater']['batchSize']);
+      $logger->info('Downloading image-information from ' . $offset . ' to ' . $stepSize + $offset);
       $logger->info('Request to ' . $url);
 
       try {
@@ -38,9 +40,7 @@ function getCompleteImageData() {
 
       $xmlString = str_replace('https://www.adabweb.niedersachsen.de/data/01/... Datei wird hochgeladen ...', 'https://denkmalatlas.niedersachsen.de/viewer/resources/themes/denkmalatlas/images/access_denied.png', $xmlString);
 
-      $logger->info('Finished download part of image-information');
-
-      $logger->info('Writing image-info to logfolder');
+      $logger->info('Finished download part ' . $downloadPart . ' of image information.');
       file_put_contents($settings['logger']['originalXMLPath'] . '/imageInfoOffset-'.$offset.'.xml', $xmlString);
 
       $xml = simplexml_load_string( $xmlString );
@@ -50,7 +50,7 @@ function getCompleteImageData() {
       }
       $images = $xml->xpath('//wfs:FeatureCollection/wfs:member');
 
-      $logger->info('Start parsing image-information');
+      $logger->info('Start parsing image-information of part ' . $downloadPart);
       foreach($images as $image) {
         $image = $image->asXML();
         $image = str_replace('xlink:', 'xlink_', $image);
@@ -102,15 +102,15 @@ function getCompleteImageData() {
       }
 
       $logger->info('This batch took ' . (microtime(true) - $startTime) . ' seconds');
-      $offset += $settings['updater']['batchSize'];
+      $offset += $stepSize;
       // break if the last iteration contain less objects than our batchsize has
       // it means, we have everything now
-      if( count($images) < $settings['updater']['batchSize'] ) {
+      if( count($images) < $stepSize ) {
         $allDone = true;
       }
     }
 
-    $logger->info('Finished parsing image-info');
+    $logger->info('Finished downloading and parsing all image data.');
     return $allImages;
 }
  ?>
