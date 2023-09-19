@@ -89,7 +89,10 @@ function getCompleteImageData() {
         $imageString .= '<rights>' . $rights . '</rights>';
         $imageString .= '<creator>' . $creator . '</creator>';
         $imageString .= '<standard url="' . $imageUrl . '" type="image/jpeg"/>';
-        $imageString .= '<description>' . $description . '</description>';
+
+        // TODO: https://jira.gbv.de/browse/DMA-232
+        $imageString .= '<description>' . htmlspecialchars($description) . '</description>';
+
         $imageString .= '<yearOfOrigin>' . $yearOfOrigin . '</yearOfOrigin>';
         $imageString .= '</image>';
         // put preferred image to start
