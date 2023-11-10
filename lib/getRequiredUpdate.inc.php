@@ -10,7 +10,8 @@
   //$allImages = getCompleteImageData();
 
   // get a list of objects by id that were already indexed
-  $url = "https://denkmalatlas.niedersachsen.de/solr/collection1/select?q=PI%3A*&rows=100000&fl=PI&wt=json&indent=true";
+
+  $url = "https://denkmalatlas.niedersachsen.de/solr/collection1/select?q=PI%3A*&fl=PI%2C+MD_NLD_RECLASTCHANGEDATETIME&rows=100000&wt=json&indent=true";
   $logger->info('Request to ' . $url);
   try {
     $response = $client->request('GET', $url);
@@ -19,10 +20,10 @@
       $logger->error($m);
       throw new Exception($m);
   }
-  $jResponse = json_decode($response);
+  $jResponse = json_decode($response->getBody()->getContents());
   $indexedObjects = array();
   foreach ( $jResponse->response->docs as $entry) {
-    $indexedObjects[] = $entry->PI;
+    $indexedObjects[] = array($entry->PI, $entry->MD_NLD_RECLASTCHANGEDATETIME);
   }
   $logger->info('Response ' . count($indexedObjects));
 
