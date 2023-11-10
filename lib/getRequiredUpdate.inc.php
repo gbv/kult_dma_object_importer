@@ -12,7 +12,7 @@
   // get a list of objects by id that were already indexed
 
   $logger->info('Get indexed objects from solr.');
-  $url = "https://denkmalatlas.niedersachsen.de/solr/collection1/select?q=PI%3A*&fl=PI%2C+MD_NLD_RECLASTCHANGEDATETIME&rows=100000&wt=json&indent=true";
+  $url = "https://denkmalatlas.niedersachsen.de/solr/collection1/select?q=PI%3A*&fl=PI%2C+MD_NLD_RECLASTCHANGEDATETIME&rows=1000000&wt=json&indent=true";
   try {
     $response = $client->request('GET', $url);
   } catch (Throwable $t) {
@@ -89,14 +89,8 @@
         $objectWasIndexed = array_key_exists($id, $indexedObjects);
         $equalChangeDate = false;
         if ($objectWasIndexed) {
-          $equalChangeDate = $lastChanged == $indexedObjects[$id];
-          if ( !$equalChangeDate ) {
-            $logger->info('Object ' . $id . ' is known, but has different change date: ' . $lastChanged . ' versus ' . $indexedObjects[$id]);
-          }
-        } else {
-          $logger->info('Object is new: ' . $id);
+          $equalChangeDate = $lastChanged === $indexedObjects[$id];
         }
-
         // only index object when it us unknown for solr or date of change has .. changed
         if ( !$objectWasIndexed || !$equalChangeDate ) {
 
