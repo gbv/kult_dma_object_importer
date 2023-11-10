@@ -11,24 +11,23 @@
 
   // get a list of objects by id that were already indexed
 
+  $logger->info('Get indexed objects from solr.');
   $url = "https://denkmalatlas.niedersachsen.de/solr/collection1/select?q=PI%3A*&fl=PI%2C+MD_NLD_RECLASTCHANGEDATETIME&rows=100000&wt=json&indent=true";
-  $logger->info('Request to ' . $url);
   try {
     $response = $client->request('GET', $url);
   } catch (Throwable $t) {
-      $m = $url . ' not available';
+      $m = 'Was not able to retrieve index objects from solr: ' . $url;
       $logger->error($m);
       throw new Exception($m);
   }
+  $logger->info('Transform json response to php object.');
   $jResponse = json_decode($response->getBody()->getContents());
   $indexedObjects = array();
+  $logger->info('Build array of objects: PI -> MD_NLD_RECLASTCHANGEDATETIME');
   foreach ( $jResponse->response->docs as $entry) {
-    $indexedObjects[] = array($entry->PI, $entry->MD_NLD_RECLASTCHANGEDATETIME);
+    $indexedObjects[$entry->PI] = $entry->MD_NLD_RECLASTCHANGEDATETIME[0];
   }
-  $logger->info('Response ' . count($indexedObjects));
-
-
-  $ready = true;
+  $logger->info('Got ' . count($indexedObjects) . ' indexed objects.');
 
   while (!$ready) {
 
@@ -84,9 +83,17 @@
         $monument = $monument->monument;
         // get identifier
         $id = (string) $monument->recId;
+        // get date of last change
+        $lastChanged = (string) $monument->recLastChangeDateTime;
+        // prepare conditions for indexing an object
+        $objectWasIndexed = array_key_exists(id, $indexedObjects);
+        $equalChangeDate = false;
+        if ($objectWasIndexed) {
+          $equalChangeDate = $lastChanged === $indexedObjects[id];
+        }
 
-        // check if id is known, if so, skip this entry
-        if (true) {
+        // only index object when it us unknown for solr or date of change has .. changed
+        if ( !$objectWasIndexed || !$equalChangeDate ) {
 
             // modify xml to fit intranda viewer-configurations
             $xmlStrMonument = $monument->asXML();
