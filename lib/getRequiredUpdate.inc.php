@@ -86,10 +86,10 @@
         // get date of last change
         $lastChanged = (string) $monument->recLastChangeDateTime;
         // prepare conditions for indexing an object
-        $objectWasIndexed = array_key_exists(id, $indexedObjects);
+        $objectWasIndexed = array_key_exists($id, $indexedObjects);
         $equalChangeDate = false;
         if ($objectWasIndexed) {
-          $equalChangeDate = $lastChanged === $indexedObjects[id];
+          $equalChangeDate = $lastChanged === $indexedObjects[$id];
         }
 
         // only index object when it us unknown for solr or date of change has .. changed
