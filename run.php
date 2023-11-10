@@ -15,26 +15,7 @@ use GuzzleHttp\Client;
 
 $now = date('Y.m.d__h:i:s', time());
 
-/*
-function rrmdir($dir) {
-   if (is_dir($dir)) {
-     $objects = scandir($dir);
-     foreach ($objects as $object) {
-       if ($object != "." && $object != "..") {
-         if (is_dir($dir."/".$object) && !is_link($dir."/".$object))
-           rrmdir($dir."/".$object);
-         else
-           unlink($dir."/".$object);
-       }
-     }
-     rmdir($dir);
-   }
- }
-rrmdir('logs/test');
-$now = "test";
-*/
-
-$allowedTypes = array('full', 'incremental', 'delete');
+$allowedTypes = array('full', 'incremental', 'required', 'delete');
 if(in_array($argv[1], $allowedTypes)) {
   $type = $argv[1];
 }
@@ -155,6 +136,9 @@ switch ($settings['updater']['type']) {
     case 'incremental':
         require_once('/opt/digiverso/kult_dma_object_importer/lib/getIncrementalUpdate.inc.php');
         break;
+    case 'required':
+      require_once('/opt/digiverso/kult_dma_object_importer/lib/getRequiredUpdate.inc.php');
+      break;
     case 'delete':
         require_once('/opt/digiverso/kult_dma_object_importer/lib/deleteAllIndexedRecords.inc.php');
         break;
