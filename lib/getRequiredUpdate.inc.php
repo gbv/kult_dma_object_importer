@@ -3,6 +3,9 @@
   $monumentsCounterPutToHotfolder = 0;
   $startTime = microtime(true);
 
+  $updatePerID = false;
+  $updateList = ["30591152", "30810194", "30810236", "30819991", "30592227", "30807617", "30807661", "30810278", "30593498", "30800125", "30592752", "30806388"];
+
   //////////////////////////////////////////////////////////////////////
   // 1. Download and parse images
   //////////////////////////////////////////////////////////////////////
@@ -91,8 +94,15 @@
         if ($objectWasIndexed) {
           $equalChangeDate = $lastChanged === $indexedObjects[$id];
         }
-        // only index object when it us unknown for solr or date of change has .. changed
-        if ( !$objectWasIndexed || !$equalChangeDate ) {
+        // import from given id list
+        $givenId = false;
+        if ($updatePerID) {
+          $givenId = in_array($id, $updateList);
+        }
+        // only index object when it us unknown for solr
+        // or date of change has .. changed
+        // or id is given
+        if ( !$objectWasIndexed || !$equalChangeDate || $givenId ) {
 
             // modify xml to fit intranda viewer-configurations
             $xmlStrMonument = $monument->asXML();
