@@ -6,14 +6,11 @@
   $updatePerID = false;
   $updateList = ["30591152", "30810194", "30810236", "30819991", "30592227", "30807617", "30807661", "30810278", "30593498", "30800125", "30592752", "30806388"];
 
-  //////////////////////////////////////////////////////////////////////
-  // 1. Download and parse images
-  //////////////////////////////////////////////////////////////////////
-  //require_once('getCompleteImageData.inc.php');
-  //$allImages = getCompleteImageData();
+  // download complete image data
+  require_once('getCompleteImageData.inc.php');
+  $allImages = getCompleteImageData();
 
   // get a list of objects by id that were already indexed
-
   $logger->info('Get indexed objects from solr.');
   $url = "https://denkmalatlas.niedersachsen.de/solr/collection1/select?q=PI%3A*&fl=PI%2C+MD_NLD_RECLASTCHANGEDATETIME&rows=1000000&wt=json&indent=true";
   try {
