@@ -47,7 +47,7 @@ $settings = [
     'type' => $type,
     'batchSize' => 10000,
     'maxCount' => (isset($argv[2]) == true ? $argv[2] : '10000000000'),
-    'hotfolder' => $destinationPath
+    'hotfolder' => $destinationPath,
     'baseUrl' => 'https://geodatendienste.denkmalatlas.niedersachsen.de/doorman/auth/nld_dda_vektor_wfs'
   ],
   'deleter' => [
