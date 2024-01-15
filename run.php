@@ -23,7 +23,7 @@ else {
   $type = 'full';
 }
 
-if( $argv[2] = 'cold') {
+if( $argv[3] = 'cold') {
   $destinationPath = '/opt/digiverso/viewer/coldfolder/';
 }
 else {
