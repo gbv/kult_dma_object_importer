@@ -99,6 +99,7 @@
         // only index object when it us unknown for solr
         // or date of change has .. changed
         // or id is given
+        // isset($monument->groupMembers) || isset($monument->group)
         if ( !$objectWasIndexed || !$equalChangeDate || $givenId ) {
 
             // modify xml to fit intranda viewer-configurations
@@ -162,6 +163,6 @@
     }
   }
   $logger->info('Finished parsing data. Parsed ' . $monumentsCounter . ' monuments!');
-  $logger->info('Added ' . $monumentsCounterPutToHotfolder . ' to hotfolder!');
+  $logger->info('Added ' . $monumentsCounterPutToHotfolder . ' to folder: ' . $settings['updater']['hotfolder'] );
 
 ?>
