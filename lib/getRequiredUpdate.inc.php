@@ -99,7 +99,7 @@
         // only index object when it us unknown for solr
         // or date of change has .. changed
         // or id is given
-        // isset($monument->groupMembers) || isset($monument->group)
+        // isset($monument->groupMembers) || isset($monument->groups)
         if ( !$objectWasIndexed || !$equalChangeDate || $givenId ) {
 
             // modify xml to fit intranda viewer-configurations
