@@ -135,6 +135,6 @@
     }
   }
   $logger->info('Finished parsing data. Parsed ' . $monumentsCounter . ' monuments!');
-  $logger->info('Added ' . $monumentsCounterPutToHotfolder . ' to hotfolder!');
+  $logger->info('Added ' . $monumentsCounterPutToHotfolder . ' to folder: ' . $settings['updater']['hotfolder'] );
 
 ?>

@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////
 
 function getCompleteImageData() {
-    global $settings, $logger, $client;
+    global $settings, $logger, $client, $startTime;
     $allImages = array();
 
     $allDone = false;
@@ -23,7 +23,7 @@ function getCompleteImageData() {
       $url .= '&count=' . $stepSize;
       $url .= '&startIndex=' . $offset;
 
-      $logger->info('Downloading image-information from ' . $offset . ' to ' . $stepSize + $offset);
+      $logger->info('Downloading image-information from ' . $offset . ' to ' . ($stepSize + $offset) );
       $logger->info('Request to ' . $url);
 
       try {
