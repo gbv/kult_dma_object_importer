@@ -16,14 +16,14 @@ use GuzzleHttp\Client;
 $now = date('Y.m.d__h:i:s', time());
 
 $allowedTypes = array('full', 'incremental', 'required', 'delete');
-if(in_array($argv[1], $allowedTypes)) {
+if( isset($argv[1]) && in_array($argv[1], $allowedTypes)) {
   $type = $argv[1];
 }
 else {
   $type = 'full';
 }
 
-if( $argv[3] == 'cold') {
+if( isset($argv[3]) && $argv[3] == 'cold') {
   $destinationPath = '/opt/digiverso/viewer/coldfolder/';
 }
 else {
