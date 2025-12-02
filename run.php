@@ -1,9 +1,52 @@
 #!/usr/bin/php
 <?php
 
-require '/opt/digiverso/kult_dma_object_importer/vendor/autoload.php';
-require '/opt/digiverso/kult_dma_object_importer/config/sensitive_settings.php';
-require '/opt/digiverso/kult_dma_object_importer/config/common_settings.php';
+function sanitizeFilename(string $filename, string $replacement = '_'): string
+{
+    // 1. Unicode Normalisierung (falls intl verfügbar)
+    if (class_exists('Normalizer')) {
+        $filename = Normalizer::normalize($filename, Normalizer::FORM_KD);
+    }
+
+    // 2. Umlaute & andere Sonderzeichen ersetzen
+    $map = [
+        'ä' => 'ae', 'Ä' => 'Ae',
+        'ö' => 'oe', 'Ö' => 'Oe',
+        'ü' => 'ue', 'Ü' => 'Ue',
+        'ß' => 'ss',
+        'é' => 'e', 'è' => 'e', 'ê' => 'e',
+        'á' => 'a', 'à' => 'a', 'â' => 'a',
+        'ó' => 'o', 'ò' => 'o', 'ô' => 'o',
+        'ú' => 'u', 'ù' => 'u', 'û' => 'u',
+        'ç' => 'c'
+    ];
+
+    $filename = strtr($filename, $map);
+
+    // 3. Leerzeichen ersetzen
+    $filename = str_replace(' ', $replacement, $filename);
+
+    // 4. Illegalen Zeichenblock ersetzen (Windows + allgemein sicher)
+    $filename = preg_replace('/[\/\\\\\?\%\*\:\|\\"<>\x00]/u', $replacement, $filename);
+
+    // 5. Alles entfernen, was keine Buchstaben, Zahlen, -, _ oder . ist
+    // (z.B. Emojis, sonderbare Unicode-Zeichen)
+    $filename = preg_replace('/[^A-Za-z0-9\-\_\.]/u', $replacement, $filename);
+
+    // 6. Mehrfache Zeichen wie ___ oder -- reduzieren
+    $filename = preg_replace('/' . preg_quote($replacement, '/') . '+/', $replacement, $filename);
+
+    // 7. Führende / abschließende Trenner entfernen
+    $filename = trim($filename, $replacement);
+
+    return $filename;
+}
+
+// /usr/bin/php /opt/denkmalatlas/kult_dma_object_importer/run.php full 10000000 cold
+
+require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/config/local_settings.php';
+require __DIR__ . '/config/common_settings.php';
 
 use Monolog\Logger;
 use Monolog\ErrorHandler;
@@ -24,31 +67,32 @@ else {
 }
 
 if( isset($argv[3]) && $argv[3] == 'cold') {
-  $destinationPath = '/opt/digiverso/viewer/coldfolder/';
+  $destinationPath = $local_settings['cold_folder_path'];
 }
 else {
-  $destinationPath = '/opt/digiverso/viewer/hotfolder/';
+  $destinationPath = $local_settings['hot_folder_path'];
 }
 
 $settings = [
   'logger' => [
       'name' => 'wfs_auto_pull',
-      'path' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . $now . '.log',
-      'originalXMLPath' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . 'original_xml',
-      'splittedXMLPath' => '/opt/digiverso/kult_dma_object_importer/logs/' . $now . '/' . 'splitted_xml',
+      'path' => __DIR__ . '/logs/' . $now . '/' . $now . '.log',
+      'originalXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'original_xml',
+      'splittedXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'splitted_xml',
       'defaultLogLevel' => Logger::DEBUG,
       'mailTriggerLevel' => Logger::WARNING,
-      'mailRecipient' => $sensitive_settings['recipient'],
-      'mailSender' => $sensitive_settings['sender']
+      'mailRecipient' => $local_settings['recipient'],
+      'mailSender' => $local_settings['sender']
   ],
   'updater' => [
-    'authUser' => $sensitive_settings['username'],
-    'authPwd' => $sensitive_settings['password'],
+    'authUser' => $local_settings['username'],
+    'authPwd' => $local_settings['password'],
     'type' => $type,
-    'batchSize' => 10000,
+    'batchSize' => 1000,
     'maxCount' => (isset($argv[2]) == true ? $argv[2] : '10000000000'),
     'hotfolder' => $destinationPath,
-    'baseUrl' => 'https://geodatendienste.denkmalatlas.niedersachsen.de/doorman/auth/nld_dda_vektor_wfs'
+    'exportUrl' => $local_settings['api_export_url'],
+    'bearer' => 'ory_at_lTzmLbV2eLX59duQXKA7kc_xRttUm2txC5PnSI3Wlz8.H4zsYX_xyeh-yizwmYV_a2TFb_me6WeY7VIO5jb7a6M'
   ],
   'deleter' => [
     'indexedDenkxwebFolder' => '/opt/digiverso/viewer/indexed_denkxweb/',
@@ -74,7 +118,9 @@ $mailHandler = new Monolog\Handler\NativeMailerHandler(
     true,
     2000
 );
-$logger->pushHandler(new Monolog\Handler\FingersCrossedHandler($mailHandler, $settings['logger']['mailTriggerLevel']));
+
+
+//$logger->pushHandler(new Monolog\Handler\FingersCrossedHandler($mailHandler, $settings['logger']['mailTriggerLevel']));
 
 $logger->info('Denkmalatlas-WebFeatureService-Auto-Pull-Mechanism-Script startet');
 $logger->debug('Settings:', $settings);
@@ -85,17 +131,34 @@ $logger->debug('init guzzle client');
 
 // init guzzle client
 $client = new Client([
-    'base_uri' => 'https://denkmalatlas.gbv.de',
+    'base_uri' => $local_settings['project_url'],
     'timeout'  => 600,
     'headers'  => ['Accept-Encoding' => 'gzip']
 ]);
 
+
+  try {
+    $response = $client->request('POST', $local_settings['api_token_url'], ['form_params' => ['username'=>'denkxweb', 'password' => 'vFt#!rAkdCe4bm', 'client_id' => 'web-client', 'client_secret' => 'foo','grant_type' => 'password','scope' => 'offline'] ]);
+  } catch (Throwable $t) {
+      // Handle exception
+      $m = $testURL . ' not available';
+      $logger->error($m);
+      throw new Exception($m);
+  }
+    $body = $response->getBody()->getContents();
+    $data = json_decode($body, true);
+    $settings['updater']['bearer'] = 'Bearer ' . $data['access_token'];
+
+
 // basic availability-tests
+/*
 $tests = [
   'Schema' => 'http://geoportal.geodaten.niedersachsen.de/adabweb/schema/ogc/wfs/2.0/wfs.xsd',
   'GetCapabilities' => $settings['updater']['baseUrl'] . '?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetCapabilities',
   'DescribeStoredQueries' => $settings['updater']['baseUrl'] . '?SERVICE=WFS&VERSION=2.0.0&REQUEST=DescribeStoredQueries'
 ];
+*/
+/* skip tests
 foreach($tests as $testKey=>$testURL) {
   $logger->debug('ask for ' . $testKey . ' @ ' . $testURL);
   try {
@@ -122,11 +185,7 @@ foreach($tests as $testKey=>$testURL) {
     throw new Exception($m);
   }
 }
-
-// MAIN-Routine
-// - 1. Hole alle
-// - 2. Hole alle ab einem bestimmten Datum
-// - 3. Leere den Index
+  */
 
 $ready = false;
 $startIndex = 0;
@@ -138,16 +197,16 @@ $logger->info('Batchsize: ' . $settings['updater']['batchSize']);
 
 switch ($settings['updater']['type']) {
     case 'full':
-        require_once('/opt/digiverso/kult_dma_object_importer/lib/getFullUpdate.inc.php');
+        require_once('/opt/denkmalatlas/kult_dma_object_importer/lib/getFullUpdate.inc.php');
         break;
     case 'incremental':
-        require_once('/opt/digiverso/kult_dma_object_importer/lib/getIncrementalUpdate.inc.php');
+        require_once('/opt/denkmalatlas/kult_dma_object_importer/lib/getIncrementalUpdate.inc.php');
         break;
     case 'required':
-      require_once('/opt/digiverso/kult_dma_object_importer/lib/getRequiredUpdate.inc.php');
+      require_once('/opt/denkmalatlas/kult_dma_object_importer/lib/getRequiredUpdate.inc.php');
       break;
     case 'delete':
-        require_once('/opt/digiverso/kult_dma_object_importer/lib/deleteAllIndexedRecords.inc.php');
+        require_once('/opt/denkmalatlas/kult_dma_object_importer/lib/deleteAllIndexedRecords.inc.php');
         break;
 }
 

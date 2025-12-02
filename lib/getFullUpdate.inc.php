@@ -3,11 +3,17 @@
   $monumentsCounterPutToHotfolder = 0;
   $startTime = microtime(true);
 
+  $updatePerID = false;
+  $updateList = ["61705230","61708599","61708445","61289553","61261402","61342431","61625590","61625561","61624856","61358838","61610581","61395930","61386845","61261993","61365560","61344992","61284815","61261345","61475923","61762366","61755861","61485283","61311282"];
+
+
   //////////////////////////////////////////////////////////////////////
   // 1. Download and parse images
   //////////////////////////////////////////////////////////////////////
-  require_once('getCompleteImageData.inc.php');
-  $allImages = getCompleteImageData();
+
+  // no need for this anymore, images are included
+  //require_once('getCompleteImageData.inc.php');
+  //$allImages = getCompleteImageData();
 
   while (!$ready) {
 
@@ -23,9 +29,12 @@
 
     //$url = 'https://services.interactive-instruments.de/adab-ni-xs/dda-wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet&CRS=http://www.opengis.net/def/crs/EPSG/0/4326&DataSetIdCode=ADABObjekte&DataSetIdNamespace=NI&Language=ger&count=' . $settings['updater']['batchSize'] . '&startIndex=' . $startIndex;
 
-    $url = $settings['updater']['baseUrl'];
-    $url .= '?SERVICE=WFS';
-    $url .= '&VERSION=2.0.0';
+    ///api/v1/plugin/extension/nfis-denkxweb-export/export?limit=1&offset=100005
+    $url = $settings['updater']['exportUrl'];
+    $url .= '?limit=' . $settings['updater']['batchSize'];
+    $url .= '&offset=' . $startIndex;
+    //$url .= '&fromDate=' . '2025-08-12';
+    /*
     $url .= '&REQUEST=GetFeature';
     $url .= '&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet';
     $url .= '&CRS=http://www.opengis.net/def/crs/EPSG/0/4326';
@@ -34,17 +43,20 @@
     $url .= '&Language=ger';
     $url .= '&count=' . $settings['updater']['batchSize'];
     $url .= '&startIndex=' . $startIndex;
+    */
 
     $logger->info('Startindex is now ' . $startIndex);
     $logger->info('Request to ' . $url);
 
     try {
-      $response = $client->request('GET', $url, ['auth' => [$settings['updater']['authUser'], $settings['updater']['authPwd']]]);
+      $response = $client->request('GET', $url, ['headers' => ['Authorization' => $settings['updater']['bearer']]]);
     } catch (Throwable $t) {
         // Handle exception
         $m = $url . ' not available';
         $logger->error($m);
-        throw new Exception($m);
+        //throw new Exception($m);
+        $startIndex += $settings['updater']['batchSize'];
+        continue;
     }
 
     $xmlString = $response->getBody()->getContents();
@@ -58,71 +70,144 @@
 
     // remove the wfs namespace for easier handling...
     //$xmlString = str_replace('wfs:', 'wfs_', $xmlString);
+    // remove debug namespace if there is one
+    $xmlString = preg_replace('/\bdebug:/', '', $xmlString);
     $xml = simplexml_load_string( $xmlString );
+    //$logger->info('XML: ' . $xmlString);
 
-    $monuments = $xml->xpath('//wfs:FeatureCollection/wfs:member[1]/wfs:FeatureCollection[1]/wfs:member');
+    /*
+    <monument> hat ein default namespace
+    <monument xmlns="http://www.rjm.de/denkxweb/denkxml" ...>
+    In XML bede0utet xmlns="...", dass alle untergeordneten Knoten diesen
+    Namespace erben, sofern nicht anders angegeben.
+    $monuments = $xml->xpath('//monument') bleibt somit leer.
+    Lösung: Registriere das Default-Namespace unter einem Prefix
+    */
+    $xml->registerXPathNamespace('dma', 'http://www.rjm.de/denkxweb/denkxml');
+    $monuments = $xml->xpath('//dma:monument');
+    //$logger->info('XML: ' . var_dump($monuments));
 
     // count monuments in xml-file
     $countOfRecordsInXMLFile = count($monuments);
+    $logger->info('We count ' . $countOfRecordsInXMLFile . ' monuments in Response File.');
+
+    $idMapping = "";
+    $idMappingHtml = "";
+    $importQuery = "";
 
     // MONUMENTS
     foreach($monuments as $monument) {
         $monumentsCounter++;
-        $monument = $monument->monument;
+        //$monument = $monument->monument;
+
+        if ($monument->error) {
+          $uuid = (string) $monument->uuid;
+          $logger->error("Fehler in Objekt: ".$uuid);
+          $logger->error($monument->error->message);
+          $logger->error($monument->error->stack);
+          continue;
+        }
+
         // get identifier
-        $id = (string) $monument->recId;
+        $objectid = (string) $monument->recId;
+        $fylrid = (string) $monument->fylrId;
+        $uuid = (string) $monument->uuid;
+        $adabwebid = (string) $monument->adabwebId;
+        if (!$adabwebid) { $adabwebid = "0"; }
 
-        // modify xml to fit intranda viewer-configurations
-        $xmlStrMonument = $monument->asXML();
+        // set id for filename
+        $id = $objectid;
 
-        // add matching images
-        $hasImage = false;
-        if(isset($allImages[$id])) {
-          $hasImage = true;
-          $imageStr = '<images>' . $allImages[$id] . '</images>';
-          $xmlStrMonument = str_replace('</monument>', $imageStr . '</monument>', $xmlStrMonument);
+        // import from given id list
+        if ( $updatePerID ) {
+          $givenId = in_array($fylrid, $updateList);
+        } else {
+          $givenId = true;
         }
-        else {
-          // only records with images!!
-          //continue; // -- new Ordner: Also use records without image!!
-        }
 
-        $xmlStrMonument = str_replace('gml:id', 'gml_id', $xmlStrMonument);
-        $xmlStrMonument = str_replace('<monument ', $common_settings['xmlHeader'] . '<monuments ' .  $common_settings['monumentsNameSpace'] . '><monument ', $xmlStrMonument);
-        $xmlStrMonument = str_replace('</monument>', '</monument></monuments>', $xmlStrMonument);
-        $monument = simplexml_load_string( $xmlStrMonument );
-        if($monument !== false) {
-          unset($monument->attributes()->{'gml_id'});
-          $xmlStrMonument = $monument->asXML();
-          $xmlStrMonument = str_replace('gml_id', 'gml:id', $xmlStrMonument);
-          if($id) {
-            $monumentsCounterPutToHotfolder++;
-            // put to log-folder
-            file_put_contents($settings['logger']['splittedXMLPath'] . '/' . $startIndex . '_to_' . ($startIndex + $settings['updater']['batchSize']) . '/' . $id . '.xml' , $xmlStrMonument);
-            // put image to hotfolder
-            if($hasImage) {
-              $downloadImageDirPath = $settings['updater']['hotfolder'] . $id . '_downloadimages';
-              if (!file_exists($downloadImageDirPath)) {
-                  mkdir($downloadImageDirPath);
-              }
-            }
-            // put xml to hotfolder
-            file_put_contents($settings['updater']['hotfolder'] . $id . '.xml' , $xmlStrMonument);
+        if ( $givenId ) {
+
+          // mapping contains all types of ids for each object
+          $idMapping = $uuid . ';' . $fylrid . ';' . $adabwebid . "\n";
+          $idMappingHtml  = '<a href="https://denkmalatlas.niedersachsen.de/viewer/resources/themes/denkmalatlas/update/export_251127/';
+          $idMappingHtml .= $uuid.'.xml">'. $uuid . '</a> | ';
+                  $idMappingHtml .= "\n";
+          $idMappingHtml .= '<a href="https://nld.test.nfis.gbv.de#/detail/';
+          $idMappingHtml .= $uuid.'">'. $fylrid . ' (nfis)</a> | ';
+                  $idMappingHtml .= "\n";
+          if ($adabwebid != "0") {
+            $idMappingHtml .= '<a href="https://denkmalatlas.niedersachsen.de/viewer/resources/themes/denkmalatlas/update/orig_denkxweb/';
+            $idMappingHtml .= $adabwebid.'.xml">'. $adabwebid . '</a>';
+            $idMappingHtml .= "\n";
+          } else {
+            $idMappingHtml .= 'keine adabweb id';
+            $idMappingHtml .= "\n";
           }
-        }
-        else {
-          $m = '<h1>ERROR beim einlesen des monumentXML</h1>';
-          $logger->error($m);
-          throw new Exception($m);
-          exit;
-        }
-        // break if maxCount is given in second parameter
-        if($monumentsCounter >= $settings['updater']['maxCount']) {
-          $logger->info('Settings -> updater -> maxCount is: ' . $settings['updater']['maxCount']);
-          $logger->info('StartIndex is: ' . $startIndex);
-          $logger->info('--> break download');
-          $ready = true;
-          break;
+          $idMappingHtml .= "</br>\n";
+          file_put_contents($settings['updater']['hotfolder'] . 'mapping.cvs' , $idMapping, FILE_APPEND);
+          file_put_contents($settings['updater']['hotfolder'] . 'mapping.html' , $idMappingHtml, FILE_APPEND);
+
+          // add matching images
+
+          if ($monument->images) {
+            $downloadImageDirPath = $settings['updater']['hotfolder'] . $id . '_media';
+            if (!file_exists($downloadImageDirPath)) {
+                mkdir($downloadImageDirPath);
+            }
+            foreach($monument->images->image as $image) {
+            //foreach($monument->images as $image) {
+              $imageUrl = (string) $image->standard->attributes()->{'url'};
+              $filename = (string) $image->filename;
+              //$imageUrl = (string) $image->image->standard->attributes()->{'url'};
+              //$filename = (string) $image->image->filename;
+              //preg_match('/\?filename=([^&]+)/', $imageUrl, $treffer);
+              //$filename = $treffer[1];
+              $saveFilename = sanitizeFilename($filename);
+              $command = "wget '" . $imageUrl . "' -O " . $downloadImageDirPath . "/" . $saveFilename;
+              exec($command . " 2>&1", $output, $return_var);
+              $image->standard['url'] = $id . '_media/' . $saveFilename;
+              //$image->image->standard['url'] = $id . '_media/' . $saveFilename;
+            }
+          }
+
+          // modify xml to fit intranda viewer-configurations
+          $xmlStrMonument = $monument->asXML();
+
+          $xmlStrMonument = str_replace('gml:id', 'gml_id', $xmlStrMonument);
+          $xmlStrMonument = str_replace('<monument ', $common_settings['xmlHeader'] . '<monuments ' .  $common_settings['monumentsNameSpace'] . '><monument ', $xmlStrMonument);
+          $xmlStrMonument = preg_replace('/<monument\b[^>]*>/', '<monument>', $xmlStrMonument);
+          $xmlStrMonument = str_replace('</monument>', '</monument></monuments>', $xmlStrMonument);
+          $monument = simplexml_load_string( $xmlStrMonument );
+          if($monument !== false) {
+            unset($monument->attributes()->{'gml_id'});
+            $xmlStrMonument = $monument->asXML();
+            $xmlStrMonument = str_replace('gml_id', 'gml:id', $xmlStrMonument);
+            if($id) {
+              $monumentsCounterPutToHotfolder++;
+              // put to log-folder
+              file_put_contents($settings['logger']['splittedXMLPath'] . '/' . $startIndex . '_to_' . ($startIndex + $settings['updater']['batchSize']) . '/' . $id . '.xml' , $xmlStrMonument);
+              // put image to hotfolder
+
+
+              // put xml to hotfolder
+              file_put_contents($settings['updater']['hotfolder'] . $id . '.xml' , $xmlStrMonument);
+            }
+          }
+          else {
+            $m = '<h1>ERROR beim einlesen des monumentXML</h1>';
+            $logger->error($m);
+            //throw new Exception($m);
+            //exit;
+            continue;
+          }
+          // break if maxCount is given in second parameter
+          if($monumentsCounter >= $settings['updater']['maxCount']) {
+            $logger->info('Settings -> updater -> maxCount is: ' . $settings['updater']['maxCount']);
+            $logger->info('StartIndex is: ' . $startIndex);
+            $logger->info('--> break download');
+            $ready = true;
+            break;
+          }
         }
     }
 
