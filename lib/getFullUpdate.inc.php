@@ -129,10 +129,10 @@
 
           // mapping contains all types of ids for each object
           $idMapping = $uuid . ';' . $fylrid . ';' . $adabwebid . "\n";
-          $idMappingHtml  = '<a href="https://denkmalatlas.niedersachsen.de/viewer/resources/themes/denkmalatlas/update/export_251127/';
+          $idMappingHtml  = '<a href="https://atlas2.gbv.de/viewer/resources/themes/denkmalatlas/update/orig_denkxweb/';
           $idMappingHtml .= $uuid.'.xml">'. $uuid . '</a> | ';
                   $idMappingHtml .= "\n";
-          $idMappingHtml .= '<a href="https://nld.test.nfis.gbv.de#/detail/';
+          $idMappingHtml .= '<a href="https://nfis.gbv.de#/detail/';
           $idMappingHtml .= $uuid.'">'. $fylrid . ' (nfis)</a> | ';
                   $idMappingHtml .= "\n";
           if ($adabwebid != "0") {
