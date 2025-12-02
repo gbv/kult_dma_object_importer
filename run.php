@@ -197,16 +197,16 @@ $logger->info('Batchsize: ' . $settings['updater']['batchSize']);
 
 switch ($settings['updater']['type']) {
     case 'full':
-        require_once('/opt/denkmalatlas/kult_dma_object_importer/lib/getFullUpdate.inc.php');
+        require_once( __DIR__ . '/lib/getFullUpdate.inc.php');
         break;
     case 'incremental':
-        require_once('/opt/denkmalatlas/kult_dma_object_importer/lib/getIncrementalUpdate.inc.php');
+        require_once( __DIR__ . '/lib/getIncrementalUpdate.inc.php');
         break;
     case 'required':
-      require_once('/opt/denkmalatlas/kult_dma_object_importer/lib/getRequiredUpdate.inc.php');
-      break;
+        require_once( __DIR__ . '/lib/getRequiredUpdate.inc.php');
+        break;
     case 'delete':
-        require_once('/opt/denkmalatlas/kult_dma_object_importer/lib/deleteAllIndexedRecords.inc.php');
+        require_once( __DIR__ . '/lib/deleteAllIndexedRecords.inc.php');
         break;
 }
 
