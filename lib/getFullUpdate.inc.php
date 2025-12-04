@@ -129,6 +129,9 @@
 
           // mapping contains all types of ids for each object
           $idMapping = $uuid . ';' . $fylrid . ';' . $adabwebid . "\n";
+          file_put_contents($settings['updater']['hotfolder'] . 'mapping.cvs' , $idMapping, FILE_APPEND);
+
+          // clickable mapping
           $idMappingHtml  = '<a href="https://atlas2.gbv.de/viewer/resources/themes/denkmalatlas/update/orig_denkxweb/';
           $idMappingHtml .= $uuid.'.xml">'. $uuid . '</a> | ';
                   $idMappingHtml .= "\n";
@@ -144,11 +147,15 @@
             $idMappingHtml .= "\n";
           }
           $idMappingHtml .= "</br>\n";
-          file_put_contents($settings['updater']['hotfolder'] . 'mapping.cvs' , $idMapping, FILE_APPEND);
           file_put_contents($settings['updater']['hotfolder'] . 'mapping.html' , $idMappingHtml, FILE_APPEND);
 
-          // add matching images
+          // mapping for apache redirect
+          if ($adabwebid != "0") {
+            $idMappingRedirect =  $adabwebid . " " . $uuid . "\n";
+            file_put_contents($settings['updater']['hotfolder'] . 'redirects.txt' , $idMappingRedirect, FILE_APPEND);
+          }
 
+          // add matching images
           if ($monument->images) {
             $downloadImageDirPath = $settings['updater']['hotfolder'] . $id . '_media';
             if (!file_exists($downloadImageDirPath)) {
