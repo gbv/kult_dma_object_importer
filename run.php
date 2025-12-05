@@ -1,9 +1,6 @@
 #!/usr/bin/php
 <?php
 
-
-
-
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config/local_settings.php';
 require __DIR__ . '/config/common_settings.php';
@@ -19,42 +16,40 @@ use GuzzleHttp\Client;
 
 $now = date('Y.m.d__h:i:s', time());
 
-// sudo /usr/bin/php /opt/denkmalatlas/kult_dma_object_importer/run.php full 10000000 cold 0 1000
+/*
+sudo /usr/bin/php /opt/denkmalatlas/kult_dma_object_importer/run.php
 
-$allowedTypes = array('full', 'incremental', 'required', 'delete');
-if( isset($argv[1]) && in_array($argv[1], $allowedTypes)) {
-  $type = $argv[1];
-}
-else {
-  $type = 'full';
-}
+--mode=full
+--results=1000000
+--folder=hot
+--offset=0
+--limit=1000
+--level=warning
 
-if( isset($argv[2]) ) {
-  $maxExportNumber = $argv[2];
-}
-else {
-  $maxExportNumber = 1000000;
-}
+*/
+$startParameter = getopt("", ["mode:", "results:", "folder","offset", "limit","level"]);
 
-if( isset($argv[3]) && $argv[3] == 'cold') {
-  $destinationPath = $local_settings['cold_folder_path'];
-}
-else {
-  $destinationPath = $local_settings['hot_folder_path'];
-}
+$skriptMode       = isset($startParameter["mode"])    ? $startParameter["mode"]     : 'full';
+$maxExportNumber  = isset($startParameter["results"]) ? $startParameter["results"]  : 1000000;
+$startIndex       = isset($startParameter["offset"])  ? $startParameter["offset"]   : 0;
+$batchSize        = isset($startParameter["limit"])   ? $startParameter["limit"]    : 1000;
 
-if( isset($argv[4]) ) {
-  $startIndex = $argv[4];
-}
-else {
-  $startIndex = 0;
+$destinationPath = $local_settings['cold_folder_path'];
+if ( isset($startParameter["folder"]) ) {
+  switch ( $startParameter["folder"] ) {
+    case 'hot':
+      $destinationPath=$local_settings['hot_folder_path'];
+      break;
+  }
 }
 
-if( isset($argv[5]) ) {
-  $batchSize = $argv[5];
-}
-else {
-  $batchSize = 1000;
+$logLevel = Logger::DEBUG;
+if ( isset($startParameter["level"]) ) {
+  switch ( $startParameter["level"] ) {
+    case 'warning':
+      $logLevel = Logger::WARNING;
+      break;
+  }
 }
 
 $settings = [
@@ -63,7 +58,7 @@ $settings = [
       'path' => __DIR__ . '/logs/' . $now . '/' . $now . '.log',
       'originalXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'original_xml',
       'splittedXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'splitted_xml',
-      'defaultLogLevel' => Logger::DEBUG,
+      'defaultLogLevel' => $logLevel,
       'mailTriggerLevel' => Logger::WARNING,
       'mailRecipient' => $local_settings['recipient'],
       'mailSender' => $local_settings['sender']
@@ -71,12 +66,12 @@ $settings = [
   'updater' => [
     'authUser' => $local_settings['username'],
     'authPwd' => $local_settings['password'],
-    'type' => $type,
+    'type' => $skriptMode,
     'batchSize' => $batchSize,
     'maxCount' => $maxExportNumber,
     'hotfolder' => $destinationPath,
     'exportUrl' => $local_settings['api_export_url'],
-    'bearer' => 'ory_at_lTzmLbV2eLX59duQXKA7kc_xRttUm2txC5PnSI3Wlz8.H4zsYX_xyeh-yizwmYV_a2TFb_me6WeY7VIO5jb7a6M'
+    'bearer' => ''
   ],
   'deleter' => [
     'indexedDenkxwebFolder' => '/opt/digiverso/viewer/indexed_denkxweb/',
