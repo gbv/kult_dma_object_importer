@@ -27,7 +27,7 @@ sudo /usr/bin/php /opt/denkmalatlas/kult_dma_object_importer/run.php
 --level=warning
 
 */
-$startParameter = getopt("", ["mode:", "results:", "folder","offset", "limit","level"]);
+$startParameter = getopt("", ["mode:", "results:", "folder:", "offset:", "limit:", "level:"]);
 
 $skriptMode       = isset($startParameter["mode"])    ? $startParameter["mode"]     : 'full';
 $maxExportNumber  = isset($startParameter["results"]) ? $startParameter["results"]  : 1000000;
@@ -102,7 +102,9 @@ $mailHandler = new Monolog\Handler\NativeMailerHandler(
 //$logger->pushHandler(new Monolog\Handler\FingersCrossedHandler($mailHandler, $settings['logger']['mailTriggerLevel']));
 
 $logger->info('Denkmalatlas-WebFeatureService-Auto-Pull-Mechanism-Script startet');
-$logger->debug('Settings:', $settings);
+$logger->debug('Settings: ', $settings);
+$logger->debug('Parameter: ', $startParameter);
+
 
 $logger->info('Type is ' . $settings['updater']['type'] . ': Start ' . $settings['updater']['type'] . ' update');
 
