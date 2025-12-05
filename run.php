@@ -1,52 +1,13 @@
 #!/usr/bin/php
 <?php
 
-function sanitizeFilename(string $filename, string $replacement = '_'): string
-{
-    // 1. Unicode Normalisierung (falls intl verfügbar)
-    if (class_exists('Normalizer')) {
-        $filename = Normalizer::normalize($filename, Normalizer::FORM_KD);
-    }
 
-    // 2. Umlaute & andere Sonderzeichen ersetzen
-    $map = [
-        'ä' => 'ae', 'Ä' => 'Ae',
-        'ö' => 'oe', 'Ö' => 'Oe',
-        'ü' => 'ue', 'Ü' => 'Ue',
-        'ß' => 'ss',
-        'é' => 'e', 'è' => 'e', 'ê' => 'e',
-        'á' => 'a', 'à' => 'a', 'â' => 'a',
-        'ó' => 'o', 'ò' => 'o', 'ô' => 'o',
-        'ú' => 'u', 'ù' => 'u', 'û' => 'u',
-        'ç' => 'c'
-    ];
 
-    $filename = strtr($filename, $map);
-
-    // 3. Leerzeichen ersetzen
-    $filename = str_replace(' ', $replacement, $filename);
-
-    // 4. Illegalen Zeichenblock ersetzen (Windows + allgemein sicher)
-    $filename = preg_replace('/[\/\\\\\?\%\*\:\|\\"<>\x00]/u', $replacement, $filename);
-
-    // 5. Alles entfernen, was keine Buchstaben, Zahlen, -, _ oder . ist
-    // (z.B. Emojis, sonderbare Unicode-Zeichen)
-    $filename = preg_replace('/[^A-Za-z0-9\-\_\.]/u', $replacement, $filename);
-
-    // 6. Mehrfache Zeichen wie ___ oder -- reduzieren
-    $filename = preg_replace('/' . preg_quote($replacement, '/') . '+/', $replacement, $filename);
-
-    // 7. Führende / abschließende Trenner entfernen
-    $filename = trim($filename, $replacement);
-
-    return $filename;
-}
-
-// /usr/bin/php /opt/denkmalatlas/kult_dma_object_importer/run.php full 10000000 cold
 
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config/local_settings.php';
 require __DIR__ . '/config/common_settings.php';
+require __DIR__ . '/lib/functions.php';
 
 use Monolog\Logger;
 use Monolog\ErrorHandler;
@@ -58,6 +19,8 @@ use GuzzleHttp\Client;
 
 $now = date('Y.m.d__h:i:s', time());
 
+// sudo /usr/bin/php /opt/denkmalatlas/kult_dma_object_importer/run.php full 10000000 cold 0 1000
+
 $allowedTypes = array('full', 'incremental', 'required', 'delete');
 if( isset($argv[1]) && in_array($argv[1], $allowedTypes)) {
   $type = $argv[1];
@@ -66,11 +29,32 @@ else {
   $type = 'full';
 }
 
+if( isset($argv[2]) ) {
+  $maxExportNumber = $argv[2];
+}
+else {
+  $maxExportNumber = 1000000;
+}
+
 if( isset($argv[3]) && $argv[3] == 'cold') {
   $destinationPath = $local_settings['cold_folder_path'];
 }
 else {
   $destinationPath = $local_settings['hot_folder_path'];
+}
+
+if( isset($argv[4]) ) {
+  $startIndex = $argv[4];
+}
+else {
+  $startIndex = 0;
+}
+
+if( isset($argv[5]) ) {
+  $batchSize = $argv[5];
+}
+else {
+  $batchSize = 1000;
 }
 
 $settings = [
@@ -88,8 +72,8 @@ $settings = [
     'authUser' => $local_settings['username'],
     'authPwd' => $local_settings['password'],
     'type' => $type,
-    'batchSize' => 1000,
-    'maxCount' => (isset($argv[2]) == true ? $argv[2] : '10000000000'),
+    'batchSize' => $batchSize,
+    'maxCount' => $maxExportNumber,
     'hotfolder' => $destinationPath,
     'exportUrl' => $local_settings['api_export_url'],
     'bearer' => 'ory_at_lTzmLbV2eLX59duQXKA7kc_xRttUm2txC5PnSI3Wlz8.H4zsYX_xyeh-yizwmYV_a2TFb_me6WeY7VIO5jb7a6M'
@@ -188,7 +172,6 @@ foreach($tests as $testKey=>$testURL) {
   */
 
 $ready = false;
-$startIndex = 0;
 
 // create dir for original xml-batches
 mkdir($settings['logger']['originalXMLPath'], 0777, true);
@@ -212,4 +195,5 @@ switch ($settings['updater']['type']) {
 
 $logger->warning('FINALLY: END OF SCRIPT');
 exit;
+
 ?>
