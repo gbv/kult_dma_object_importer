@@ -27,12 +27,21 @@ sudo /usr/bin/php /opt/denkmalatlas/kult_dma_object_importer/run.php
 --level=warning
 
 */
-$startParameter = getopt("", ["mode:", "results:", "folder:", "offset:", "limit:", "level:"]);
+$startParameter = getopt("", [
+  "mode:",
+  "results:",
+  "folder:",
+  "offset:",
+  "limit:",
+  "level:",
+  "preselect"
+]);
 
-$skriptMode       = isset($startParameter["mode"])    ? $startParameter["mode"]     : 'full';
-$maxExportNumber  = isset($startParameter["results"]) ? $startParameter["results"]  : 1000000;
-$startIndex       = isset($startParameter["offset"])  ? $startParameter["offset"]   : 0;
-$batchSize        = isset($startParameter["limit"])   ? $startParameter["limit"]    : 1000;
+$skriptMode       = isset($startParameter["mode"])      ? $startParameter["mode"]     : 'full';
+$maxExportNumber  = isset($startParameter["results"])   ? $startParameter["results"]  : 1000000;
+$startIndex       = isset($startParameter["offset"])    ? $startParameter["offset"]   : 0;
+$batchSize        = isset($startParameter["limit"])     ? $startParameter["limit"]    : 1000;
+$preselect        = isset($startParameter["preselect"]) ? true                        : false;
 
 $destinationPath = $local_settings['cold_folder_path'];
 if ( isset($startParameter["folder"]) ) {
@@ -71,7 +80,8 @@ $settings = [
     'maxCount' => $maxExportNumber,
     'hotfolder' => $destinationPath,
     'exportUrl' => $local_settings['api_export_url'],
-    'bearer' => ''
+    'bearer' => '',
+    'preselect' => $preselect
   ],
   'deleter' => [
     'indexedDenkxwebFolder' => '/opt/digiverso/viewer/indexed_denkxweb/',
