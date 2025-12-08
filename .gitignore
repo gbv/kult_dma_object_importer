@@ -2,3 +2,4 @@ config/local_settings.php
 vendor
 local
 logs/*
+token.json

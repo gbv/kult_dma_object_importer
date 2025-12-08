@@ -40,4 +40,33 @@ function sanitizeFilename(string $filename, string $replacement = '_'): string
     return $filename;
 }
 
+function apiRequest($client, TokenManager $tokenManager, LoggerInterface $logger, $url)
+{
+    try {
+        $accessToken = $tokenManager->getAccessToken();
+
+        return $client->request('GET', $url, [
+            'headers' => ['Authorization' => "Bearer {$accessToken}"]
+        ]);
+
+    } catch (\GuzzleHttp\Exception\ClientException $e) {
+
+        // token expired -> 401 Unauthorized
+        if ($e->getResponse()->getStatusCode() === 401) {
+            $logger->warning("Token invalid — refreshing…");
+
+            // get new token
+            $tokenManager->refreshToken($tokenManager->load()['refresh_token']);
+
+            // try new request
+            $newToken = $tokenManager->getAccessToken();
+
+            return $client->request('GET', $url, [
+                'headers' => ['Authorization' => "Bearer {$newToken}"]
+            ]);
+        }
+
+        throw $e;
+    }
+}
 ?>

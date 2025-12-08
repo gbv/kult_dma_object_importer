@@ -6,57 +6,34 @@
   $updatePerID = $settings['updater']['preselect'];
   $updateList = ["61705230","61708599","61708445","61289553","61261402","61342431","61625590","61625561","61624856","61358838","61610581","61395930","61386845","61261993","61365560","61344992","61284815","61261345","61475923","61762366","61755861","61485283","61311282"];
 
-
-  //////////////////////////////////////////////////////////////////////
-  // 1. Download and parse images
-  //////////////////////////////////////////////////////////////////////
-
-  // no need for this anymore, images are included
-  //require_once('getCompleteImageData.inc.php');
-  //$allImages = getCompleteImageData();
-
   while (!$ready) {
 
     //////////////////////////////////////////////////////////////////////
     // 2. Download and parse records
     //////////////////////////////////////////////////////////////////////
 
-    // einen einzelnen Datensatz abfragen:
-    // https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=http://www.opengis.net/def/query/OGC-WFS/0/GetFeatureById&ID=monument.34672634
-
-    // alle ohne paging:
-    // https://www.adabweb.niedersachsen.de/adabweb/denkmalatlas/wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet&CRS=http://www.opengis.net/def/crs/EPSG/0/4326&DataSetIdCode=ADABObjekte&DataSetIdNamespace=NI&Language=ger&count=20000&startIndex=0
-
-    //$url = 'https://services.interactive-instruments.de/adab-ni-xs/dda-wfs?SERVICE=WFS&VERSION=2.0&REQUEST=GetFeature&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet&CRS=http://www.opengis.net/def/crs/EPSG/0/4326&DataSetIdCode=ADABObjekte&DataSetIdNamespace=NI&Language=ger&count=' . $settings['updater']['batchSize'] . '&startIndex=' . $startIndex;
-
     ///api/v1/plugin/extension/nfis-denkxweb-export/export?limit=1&offset=100005
     $url = $settings['updater']['exportUrl'];
     $url .= '?limit=' . $settings['updater']['batchSize'];
     $url .= '&offset=' . $startIndex;
     //$url .= '&fromDate=' . '2025-08-12';
-    /*
-    $url .= '&REQUEST=GetFeature';
-    $url .= '&STOREDQUERY_ID=http://inspire.ec.europa.eu/operation/download/GetSpatialDataSet';
-    $url .= '&CRS=http://www.opengis.net/def/crs/EPSG/0/4326';
-    $url .= '&DataSetIdCode=ADABObjekte';
-    $url .= '&DataSetIdNamespace=NI';
-    $url .= '&Language=ger';
-    $url .= '&count=' . $settings['updater']['batchSize'];
-    $url .= '&startIndex=' . $startIndex;
-    */
 
     $logger->info('Startindex is now ' . $startIndex);
     $logger->info('Request to ' . $url);
 
+    $token = $tokenManager->getAccessToken();
     try {
-      $response = $client->request('GET', $url, ['headers' => ['Authorization' => $settings['updater']['bearer']]]);
+        $response = $client->request('GET', $url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token
+            ]
+        ]);
     } catch (Throwable $t) {
-        // Handle exception
         $m = $url . ' not available';
         $logger->error($m);
-        //throw new Exception($m);
-        $startIndex += $settings['updater']['batchSize'];
-        continue;
+        throw new Exception($m);
+        //$startIndex += $settings['updater']['batchSize'];
+        //continue;
     }
 
     $xmlString = $response->getBody()->getContents();
