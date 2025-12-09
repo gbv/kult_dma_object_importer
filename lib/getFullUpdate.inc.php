@@ -21,19 +21,29 @@
     $logger->info('Startindex is now ' . $startIndex);
     $logger->info('Request to ' . $url);
 
-    $token = $tokenManager->getAccessToken();
-    try {
-        $response = $client->request('GET', $url, [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $token
-            ]
-        ]);
-    } catch (Throwable $t) {
-        $m = $url . ' not available';
-        $logger->error($m);
-        throw new Exception($m);
-        //$startIndex += $settings['updater']['batchSize'];
-        //continue;
+    // Attempt request with retries + exponential backoff. Use apiRequest to leverage token refresh.
+    $maxRetries = 3;
+    $attempt = 0;
+    $delaySeconds = 2;
+    $response = null;
+    while ($attempt < $maxRetries) {
+      $attempt++;
+      try {
+        $response = apiRequest($client, $tokenManager, $logger, $url);
+        break;
+      } catch (Throwable $t) {
+        $logger->warning("Request attempt {$attempt} failed: " . $t->getMessage());
+        if ($attempt >= $maxRetries) {
+          $logger->error("All {$maxRetries} attempts failed for URL: {$url}");
+          $startIndex += $settings['updater']['batchSize'];
+          $logger->warning('Skipping to next batch due to repeated request errors. New startIndex: ' . $startIndex);
+          // continue the outer batch loop
+          continue 2;
+        }
+        sleep($delaySeconds);
+        $delaySeconds *= 2;
+        continue;
+      }
     }
 
     $xmlString = $response->getBody()->getContents();
@@ -197,6 +207,14 @@
 
     $logger->info('This batch took ' . (microtime(true) - $startTime) . ' seconds');
     $startIndex += $settings['updater']['batchSize'];
+
+    // stop if startIndex reached configured maximum results (prevents infinite loop on repeated errors)
+    $maxOffset = (int)$settings['updater']['maxCount'];
+    if ($maxOffset > 0 && $startIndex >= $maxOffset) {
+      $logger->info('Reached configured max offset (' . $maxOffset . '), stopping. Current startIndex: ' . $startIndex);
+      $ready = true;
+    }
+
     // break if the last iteration contain less objects than our batchsize has
     // it means, we have everything now
     if($countOfRecordsInXMLFile < $settings['updater']['batchSize']) {

@@ -1,4 +1,5 @@
 <?php
+use Psr\Log\LoggerInterface;
 // returns a given filename cleaned up
 function sanitizeFilename(string $filename, string $replacement = '_'): string
 {
