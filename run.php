@@ -18,17 +18,6 @@ use GuzzleHttp\Client;
 
 $now = date('Y.m.d__h:i:s', time());
 
-/*
-sudo /usr/bin/php /opt/denkmalatlas/kult_dma_object_importer/run.php
-
---mode=full
---results=1000000
---folder=hot
---offset=0
---limit=1000
---level=warning
-
-*/
 $startParameter = getopt("", [
   "mode:",
   "results:",

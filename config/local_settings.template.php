@@ -12,7 +12,9 @@
     'hot_folder_path' => '',
     'api_export_url' => '',
     'api_token_url' => '',
-    'project_url' => ''
+    'project_url' => '',
+    'api_username'=>'',
+    'api_password' => ''
   ];
 
 ?>
