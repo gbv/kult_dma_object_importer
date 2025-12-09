@@ -39,24 +39,24 @@ $startParameter = getopt("", [
   "preselect"
 ]);
 
-$skriptMode       = isset($startParameter["mode"])      ? $startParameter["mode"]     : 'full';
-$maxExportNumber  = isset($startParameter["results"])   ? $startParameter["results"]  : 1000000;
-$startIndex       = isset($startParameter["offset"])    ? $startParameter["offset"]   : 0;
-$batchSize        = isset($startParameter["limit"])     ? $startParameter["limit"]    : 1000;
-$preselect        = isset($startParameter["preselect"]) ? true                        : false;
+$skriptMode = isset($startParameter["mode"]) ? $startParameter["mode"] : 'all';
+$maxExportNumber = isset($startParameter["results"]) ? $startParameter["results"] : 1000000;
+$startIndex = isset($startParameter["offset"]) ? $startParameter["offset"] : 0;
+$batchSize = isset($startParameter["limit"]) ? $startParameter["limit"] : 1000;
+$preselect = isset($startParameter["preselect"]) ? true : false;
 
 $destinationPath = $local_settings['cold_folder_path'];
-if ( isset($startParameter["folder"]) ) {
-  switch ( $startParameter["folder"] ) {
+if (isset($startParameter["folder"])) {
+  switch ($startParameter["folder"]) {
     case 'hot':
-      $destinationPath=$local_settings['hot_folder_path'];
+      $destinationPath = $local_settings['hot_folder_path'];
       break;
   }
 }
 
 $logLevel = Logger::DEBUG;
-if ( isset($startParameter["level"]) ) {
-  switch ( $startParameter["level"] ) {
+if (isset($startParameter["level"])) {
+  switch ($startParameter["level"]) {
     case 'warning':
       $logLevel = Logger::WARNING;
       break;
@@ -65,14 +65,14 @@ if ( isset($startParameter["level"]) ) {
 
 $settings = [
   'logger' => [
-      'name' => 'wfs_auto_pull',
-      'path' => __DIR__ . '/logs/' . $now . '/' . $now . '.log',
-      'originalXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'original_xml',
-      'splittedXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'splitted_xml',
-      'defaultLogLevel' => $logLevel,
-      'mailTriggerLevel' => Logger::WARNING,
-      'mailRecipient' => $local_settings['recipient'],
-      'mailSender' => $local_settings['sender']
+    'name' => 'wfs_auto_pull',
+    'path' => __DIR__ . '/logs/' . $now . '/' . $now . '.log',
+    'originalXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'original_xml',
+    'splittedXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'splitted_xml',
+    'defaultLogLevel' => $logLevel,
+    'mailTriggerLevel' => Logger::WARNING,
+    'mailRecipient' => $local_settings['recipient'],
+    'mailSender' => $local_settings['sender']
   ],
   'updater' => [
     'authUser' => $local_settings['username'],
@@ -82,18 +82,11 @@ $settings = [
     'maxCount' => $maxExportNumber,
     'hotfolder' => $destinationPath,
     'exportUrl' => $local_settings['api_export_url'],
-    'bearer' => '',
     'preselect' => $preselect
-  ],
-  'deleter' => [
-    'indexedDenkxwebFolder' => '/opt/digiverso/viewer/indexed_denkxweb/',
-    'hotfolder' => $destinationPath
   ]
 ];
 
-include('lib/exception_routine.inc.php');
 set_exception_handler('exception_routine');
-
 $logger = new Logger($settings['logger']['name']);
 
 // log to stdout
@@ -102,12 +95,12 @@ $logger->pushHandler(new StreamHandler('php://stdout', $settings['logger']['defa
 $logger->pushHandler(new StreamHandler($settings['logger']['path'], $settings['logger']['defaultLogLevel']));
 // send logs via mail
 $mailHandler = new Monolog\Handler\NativeMailerHandler(
-    $settings['logger']['mailRecipient'],
-    '[Denkmalatlas] WFS Import Status',
-    $settings['logger']['mailSender'],
-    $settings['logger']['defaultLogLevel'],
-    true,
-    2000
+  $settings['logger']['mailRecipient'],
+  '[Denkmalatlas] WFS Import Status',
+  $settings['logger']['mailSender'],
+  $settings['logger']['defaultLogLevel'],
+  true,
+  2000
 );
 
 //$logger->pushHandler(new Monolog\Handler\FingersCrossedHandler($mailHandler, $settings['logger']['mailTriggerLevel']));
@@ -123,9 +116,9 @@ $logger->debug('init guzzle client');
 
 // init guzzle client
 $client = new Client([
-    'base_uri' => $local_settings['project_url'],
-    'timeout'  => 600,
-    'headers'  => ['Accept-Encoding' => 'gzip']
+  'base_uri' => $local_settings['project_url'],
+  'timeout' => 600,
+  'headers' => ['Accept-Encoding' => 'gzip']
 ]);
 
 $tokenStorage = new FileTokenStorage(__DIR__ . '/token.json');
@@ -138,22 +131,8 @@ mkdir($settings['logger']['originalXMLPath'], 0777, true);
 
 $logger->info('Batchsize: ' . $settings['updater']['batchSize']);
 
-switch ($settings['updater']['type']) {
-    case 'full':
-        require_once( __DIR__ . '/lib/getFullUpdate.inc.php');
-        break;
-    case 'incremental':
-        require_once( __DIR__ . '/lib/getIncrementalUpdate.inc.php');
-        break;
-    case 'required':
-        require_once( __DIR__ . '/lib/getRequiredUpdate.inc.php');
-        break;
-    case 'delete':
-        require_once( __DIR__ . '/lib/deleteAllIndexedRecords.inc.php');
-        break;
-}
+require_once(__DIR__ . '/lib/getImportFiles.php');
 
 $logger->warning('FINALLY: END OF SCRIPT');
-exit;
-
+exit(0);
 ?>
