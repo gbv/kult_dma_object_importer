@@ -19,8 +19,15 @@ class TokenManager
     $this->clientSecret = 'foo';
   }
 
-  public function getAccessToken()
+  public function getAccessToken($force=false)
   {
+    // do not use token storage
+    // simply get new token
+    if ($force) {
+      return $this->fetchNewToken();
+    }
+
+    // load token data from storage
     $tokenData = $this->tokenStorage->load();
 
     // check for existing valid token
@@ -30,9 +37,10 @@ class TokenManager
 
     // check for refresh token
     if ($tokenData && !empty($tokenData['refresh_token'])) {
-      return $this->refreshToken();
+      return $this->refreshToken($tokenData['refresh_token']);
     }
 
+    // if no token was found in storage
     // get new token
     return $this->fetchNewToken();
   }
@@ -55,10 +63,8 @@ class TokenManager
     return $data['access_token'];
   }
 
-  public function refreshToken()
+  private function refreshToken($refreshToken)
   {
-    $tokenData = $this->tokenStorage->load();
-    $refreshToken = $tokenData['refresh_token'];
     $response = $this->client->request('POST', $this->localSettings['api_token_url'], [
       'form_params' => [
         'grant_type' => 'refresh_token',
@@ -76,7 +82,11 @@ class TokenManager
 
   private function storeToken($data)
   {
-    $data['expires_at'] = time() + $data['expires_in'];
+    // compute absolute expiry timestamp
+    // with small leeway to avoid using near-expiry tokens
+    $expiresIn = isset($data['expires_in']) ? (int)$data['expires_in'] : 0;
+    $leeway = 3600; // refresh X seconds before actual expiry
+    $data['expires_at'] = time() + max(0, $expiresIn - $leeway);
     $this->tokenStorage->save($data);
   }
 }

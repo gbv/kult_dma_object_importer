@@ -4,8 +4,6 @@
   // copy template, remove template from name and add local values
 
   $local_settings = [
-    'username' => '',
-    'password' => '',
     'recipient' => '',
     'sender' => '',
     'cold_folder_path' => '',
