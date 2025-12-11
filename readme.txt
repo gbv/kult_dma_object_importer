@@ -23,7 +23,7 @@
 # --limit=1000
 #
 # switch to warning to reduve log output
-# --level=debug|warning
+# --level=info|debug|warning
 #
 # set without value to get only objects stored by system id in code
 # --preselect

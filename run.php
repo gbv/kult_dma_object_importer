@@ -58,9 +58,15 @@ if (isset($startParameter["folder"])) {
   }
 }
 
-$logLevel = Logger::DEBUG;
+$logLevel = Logger::INFO;
 if (isset($startParameter["level"])) {
   switch ($startParameter["level"]) {
+    case 'debug':
+      $logLevel = Logger::DEBUG;
+      break;
+    case 'info':
+      $logLevel = Logger::INFO;
+      break;
     case 'warning':
       $logLevel = Logger::WARNING;
       break;
@@ -74,7 +80,7 @@ $settings = [
     'originalXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'original_xml',
     'splittedXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'splitted_xml',
     'defaultLogLevel' => $logLevel,
-    'mailTriggerLevel' => Logger::WARNING,
+    'mailTriggerLevel' => Logger::INFO,
     'mailRecipient' => $local_settings['recipient'],
     'mailSender' => $local_settings['sender']
   ],
@@ -92,7 +98,7 @@ $settings = [
 $logger = LoggerFactory::create($settings['logger']);
 
 // log status
-$logger->info('Process started.');
+$logger->info('Export started.');
 $logger->debug('Given parameter: ', $startParameter);
 $logger->debug('Current settings: ', $settings);
 
@@ -119,7 +125,7 @@ mkdir($settings['logger']['originalXMLPath'], 0777, true);
 // init request handler
 $apiRequester = new ApiRequester($client, $tokenManager, $logger);
 
-$logger->info('Batchsize: ' . $settings['updater']['batchSize']);
+$logger->debug('Batchsize: ' . $settings['updater']['batchSize']);
 
 // set up loop variables
 $monumentsCounter = 0;
@@ -147,8 +153,8 @@ while (!$ready) {
   //$url .= '&fromDate=' . '2025-08-12';
 
   // write status to log
-  $logger->info('Startindex is now ' . $startIndex);
-  $logger->info('Request to ' . $url);
+  $logger->debug('Startindex is now ' . $startIndex);
+  $logger->debug('Request to ' . $url);
 
   // attempt request with retries + exponential backoff
   // use apiRequest to leverage token refresh
@@ -215,7 +221,7 @@ while (!$ready) {
 
   // count monuments in xml-file
   $countOfRecordsInXMLFile = count($monuments);
-  $logger->info('We count ' . $countOfRecordsInXMLFile . ' monuments in Response File.');
+  $logger->debug('We count ' . $countOfRecordsInXMLFile . ' monuments in Response File.');
 
   $idMapping = "";
   $idMappingHtml = "";
@@ -336,8 +342,12 @@ while (!$ready) {
 
       // break if maxCount is given in second parameter
       if ($monumentsCounter >= $settings['updater']['maxCount']) {
-        $logger->info('Results are limited to: ' . $settings['updater']['maxCount']);
-        $logger->info('Reached monument counter of: ' . $monumentsCounter . '. Stopping.');
+        $loggerMessage = sprintf(
+          'Stopping export. Result limit of %d reached. Processed %d monuments.',
+          $settings['updater']['maxCount'],
+          $monumentsCounter
+        );
+        $logger->info($loggerMessage);
         // stop loop
         $ready = true;
         break;
@@ -346,15 +356,14 @@ while (!$ready) {
   }
 
   $elapsed = microtime(true) - $startTime;
-  $logger->info('This batch took ' . DurationFormatter::format($elapsed));
+  $logger->debug('This export took ' . DurationFormatter::format($elapsed) . 'so far.');
   $startIndex += $settings['updater']['batchSize'];
 
   // stop if startIndex reached configured maximum results
   // prevents infinite loop on repeated errors
   $maxOffset = (int) $settings['updater']['maxCount'];
   if ($maxOffset > 0 && $startIndex >= $maxOffset) {
-    $logger->info('Offset is limited to: ' . $maxOffset);
-    $logger->info('Current startIndex: ' . $startIndex . '. Stopping.');
+    $logger->info('Stopping export. Offset limit of ' . $maxOffset . ' reached. Current start index is: ' . $startIndex);
     // stop loop
     $ready = true;
   }
@@ -368,8 +377,13 @@ while (!$ready) {
 }
 
 // write results to log and terminate script
-$logger->info('Export finished. Got ' . $monumentsCounter . ' objects.');
-$logger->info('Added ' . $monumentsCounterPutToHotfolder . 'objects to folder: ' . $settings['updater']['hotfolder']);
-$logger->warning('Process terminated.');
+$loggerMessage = sprintf(
+  'Export finished after %s. Got %d objects. Added %d objects to folder: %s',
+  DurationFormatter::format($elapsed),
+  $monumentsCounter,
+  $monumentsCounterPutToHotfolder,
+  $settings['updater']['hotfolder']
+);
+$logger->info($loggerMessage);
 exit(0);
 ?>
