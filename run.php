@@ -357,7 +357,7 @@ while (!$ready) {
   }
 
   $elapsed = microtime(true) - $startTime;
-  $logger->debug('This export took ' . DurationFormatter::format($elapsed) . 'so far.');
+  $logger->info('Reached ' . $monumentsCounter . ' Objects. This export took ' . DurationFormatter::format($elapsed) . ' so far.');
   $startIndex += $settings['updater']['batchSize'];
 
   // stop if startIndex reached configured maximum results
