@@ -38,8 +38,10 @@ $startParameter = getopt("", [
   "limit:",
   "level:",
   "preselect",
-  "skipimage"
+  "skipimages"
 ]);
+
+// todo: check if params are known and has valid values
 
 // compute start parameter
 $skriptMode = isset($startParameter["mode"]) ? $startParameter["mode"] : 'all';
@@ -47,7 +49,7 @@ $maxExportNumber = isset($startParameter["results"]) ? $startParameter["results"
 $startIndex = isset($startParameter["offset"]) ? $startParameter["offset"] : 0;
 $batchSize = isset($startParameter["limit"]) ? $startParameter["limit"] : 1000;
 $preselect = isset($startParameter["preselect"]) ? true : false;
-$skipimage = isset($startParameter["skipimage"]) ? true : false;
+$skipimage = isset($startParameter["skipimages"]) ? true : false;
 
 $destinationPath = $local_settings['cold_folder_path'];
 if (isset($startParameter["folder"])) {
@@ -80,7 +82,7 @@ $settings = [
     'originalXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'original_xml',
     'splittedXMLPath' => __DIR__ . '/logs/' . $now . '/' . 'splitted_xml',
     'defaultLogLevel' => $logLevel,
-    'mailTriggerLevel' => Logger::INFO,
+    'mailBufferLimit' => 100,
     'mailRecipient' => $local_settings['recipient'],
     'mailSender' => $local_settings['sender']
   ],
@@ -98,8 +100,7 @@ $settings = [
 $logger = LoggerFactory::create($settings['logger']);
 
 // log status
-$logger->info('Export started.');
-$logger->debug('Given parameter: ', $startParameter);
+$logger->info('Export started with: ' .$startParameter);
 $logger->debug('Current settings: ', $settings);
 
 // init guzzle client

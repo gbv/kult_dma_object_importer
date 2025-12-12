@@ -1,7 +1,7 @@
 {
     "require": {
-        "monolog/monolog": "^2.0",
-        "guzzlehttp/guzzle": "^6.3",
+        "monolog/monolog": "^3.0",
+        "guzzlehttp/guzzle": "^7.0",
         "sabre/xml": "^2.1"
     }
 }

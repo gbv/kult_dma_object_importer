@@ -3,7 +3,7 @@
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\NativeMailerHandler;
-use Monolog\Handler\FingersCrossedHandler;
+use Monolog\Handler\BufferHandler;
 use Monolog\Formatter\HtmlFormatter;
 use Monolog\Formatter\LineFormatter;
 
@@ -39,8 +39,15 @@ class LoggerFactory
             2000
         );
         $mailHandler->setFormatter(new HtmlFormatter($dateFormat));
-        $logger->pushHandler(new FingersCrossedHandler($mailHandler, $settings['mailTriggerLevel']));
 
+        $bufferHandler = new BufferHandler(
+            $mailHandler,
+            $settings['mailBufferLimit'],
+            $settings['defaultLogLevel'],
+            true,
+            true
+        );
+        $logger->pushHandler($bufferHandler);
         return $logger;
     }
 }
