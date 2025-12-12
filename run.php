@@ -100,7 +100,7 @@ $settings = [
 $logger = LoggerFactory::create($settings['logger']);
 
 // log status
-$logger->info('Export started with: ' .$startParameter);
+$logger->info('Export started with: ', $startParameter);
 $logger->debug('Current settings: ', $settings);
 
 // init guzzle client
