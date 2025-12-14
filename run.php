@@ -268,7 +268,7 @@ while (!$ready) {
     }
 
     if ($validId) {
-
+      $needUpdate=false;
       // mapping contains all types of ids for each object
       $idMapping = $uuId . ';' . $fylrId . ';' . $adabwebId . "\n";
       file_put_contents($settings['updater']['hotfolder'] . 'mapping.cvs', $idMapping, FILE_APPEND);
@@ -299,6 +299,7 @@ while (!$ready) {
 
       // add matching images
       if ($monument->images) {
+
         $logger->debug('XML enthält Bilder.');
         $downloadImageDirPath = $settings['updater']['hotfolder'] . $id . '_media';
         foreach ($monument->images->image as $image) {
@@ -314,6 +315,7 @@ while (!$ready) {
             );
             // image not stored yet
             if (empty(shell_exec($command))) {
+              $needUpdate=true;
               $logger->debug('Existiert noch nicht. Starte download.');
               if (!file_exists($downloadImageDirPath)) {
                 mkdir($downloadImageDirPath, 0777, true);
@@ -354,7 +356,7 @@ while (!$ready) {
         unset($monument->attributes()->{'gml_id'});
         $xmlStrMonument = $monument->asXML();
         $xmlStrMonument = str_replace('gml_id', 'gml:id', $xmlStrMonument);
-        if ($id) {
+        if ($id && $needUpdate) {
           // object stored
           $monumentsCounterPutToHotfolder++;
           // put to log-folder
