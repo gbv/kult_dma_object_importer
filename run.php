@@ -305,13 +305,8 @@ while (!$ready) {
         foreach ($monument->images->image as $image) {
           $filename = (string) $image->filename;
           $saveFilename = FileNameSanitizer::sanitizeStatic($filename);
-          $logger->debug('Bildname: ' . $saveFilename);
+          $logger->debug('Bildname: ' . $saveFilename . ' Im Verzeichnis: ' . $imageDirName . ' Unterhalb von: ' . $settings['updater']['datafolder']);
           if (!$skipimage) {
-            $command = sprintf(
-              'find %s -type f -name %s 2>/dev/null | head -n 1',
-              escapeshellarg($settings['updater']['datafolder']),
-              escapeshellarg($saveFilename)
-            );
             $command = sprintf(
                 'find %s -type d -name %s -exec find {} -type f -name %s \\; 2>/dev/null | head -n 1',
                 escapeshellarg($settings['updater']['datafolder']),
