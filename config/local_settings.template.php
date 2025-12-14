@@ -8,6 +8,7 @@
     'sender' => '',
     'cold_folder_path' => '',
     'hot_folder_path' => '',
+    'data_folder_path' => '',
     'api_export_url' => '',
     'api_token_url' => '',
     'project_url' => '',

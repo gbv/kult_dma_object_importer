@@ -91,6 +91,7 @@ $settings = [
     'batchSize' => $batchSize,
     'maxCount' => $maxExportNumber,
     'hotfolder' => $destinationPath,
+    'datafolder' => $local_settings['data_folder_path'],
     'exportUrl' => $local_settings['api_export_url'],
     'preselect' => $preselect
   ]
@@ -298,18 +299,50 @@ while (!$ready) {
 
       // add matching images
       if ($monument->images) {
-
-        $downloadImageDirPath = $settings['updater']['hotfolder'] . $id . '_media';
-        if (!$skipimage && !file_exists($downloadImageDirPath ) ) {
-          mkdir($downloadImageDirPath);
-        }
+        $logger->debug('XML enthält Bilder.');
+        $imageDirName = $id . '_media';
+        $downloadImageDirPath = $settings['updater']['hotfolder'] .$imageDirName;
         foreach ($monument->images->image as $image) {
           $filename = (string) $image->filename;
           $saveFilename = FileNameSanitizer::sanitizeStatic($filename);
+          $logger->debug('Bildname: ' . $saveFilename);
           if (!$skipimage) {
-            $imageUrl = (string) $image->standard->attributes()->{'url'};
-            $command = "wget '" . $imageUrl . "' -O " . $downloadImageDirPath . "/" . $saveFilename;
-            exec($command . " 2>&1", $output, $return_var);
+            $command = sprintf(
+              'find %s -type f -name %s 2>/dev/null | head -n 1',
+              escapeshellarg($settings['updater']['datafolder']),
+              escapeshellarg($saveFilename)
+            );
+            $command = sprintf(
+                'find %s -type d -name %s -exec find {} -type f -name %s \\; 2>/dev/null | head -n 1',
+                escapeshellarg($settings['updater']['datafolder']),
+                escapeshellarg($imageDirName),
+                escapeshellarg($saveFilename)
+            );
+            // image not stored yet
+            if (empty(shell_exec($command))) {
+              $logger->debug('Existiert noch nicht. Starte download.');
+              if (!file_exists($downloadImageDirPath)) {
+                mkdir($downloadImageDirPath, 0777, true);
+              }
+              // get image
+              $imageUrl = (string) $image->standard->attributes()->{'url'};
+              $command = "wget " . escapeshellarg($imageUrl) . " -O " . escapeshellarg($downloadImageDirPath . "/" . $saveFilename);
+              exec($command . " 2>&1", $output, $return_var);
+              if ($return_var !== 0) {
+                $logger->error(
+                  "Image download failed.",
+                  [
+                    'command' => $command,
+                    'output' => $output,
+                    'return_var' => $return_var,
+                    'imageUrl' => $imageUrl,
+                    'saveFilename' => $saveFilename
+                  ]
+                );
+              }
+            } else {
+              $logger->debug('Existiert. Gehe zum nächsten Bild.');
+            }
           }
           $image->standard['url'] = $id . '_media/' . $saveFilename;
         }
