@@ -300,17 +300,16 @@ while (!$ready) {
       // add matching images
       if ($monument->images) {
         $logger->debug('XML enthält Bilder.');
-        $imageDirName = $id . '_media';
-        $downloadImageDirPath = $settings['updater']['hotfolder'] .$imageDirName;
+        $downloadImageDirPath = $settings['updater']['hotfolder'] . $id . '_media';
         foreach ($monument->images->image as $image) {
           $filename = (string) $image->filename;
           $saveFilename = FileNameSanitizer::sanitizeStatic($filename);
-          $logger->debug('Bildname: ' . $saveFilename . ' Im Verzeichnis: ' . $imageDirName . ' Unterhalb von: ' . $settings['updater']['datafolder']);
+          $logger->debug('Bildname: ' . $saveFilename . ' Im Verzeichnis: ' . $id . ' Unterhalb von: ' . $settings['updater']['datafolder']);
           if (!$skipimage) {
             $command = sprintf(
                 'find %s -type d -name %s -exec find {} -type f -name %s \\; 2>/dev/null | head -n 1',
                 escapeshellarg($settings['updater']['datafolder']),
-                escapeshellarg($imageDirName),
+                escapeshellarg($id),
                 escapeshellarg($saveFilename)
             );
             // image not stored yet
