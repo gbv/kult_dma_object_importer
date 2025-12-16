@@ -313,9 +313,11 @@ while (!$ready) {
                 escapeshellarg('/' . $id . '/')
             );
             $output = shell_exec($command);
+            /* todo: seems it is also null when image just not exist
             if ($output === null) {
                 $logger->error('Locate konnte nicht ausgeführt werden: ' . $command);
             }
+            */
             $immageNotLocated = trim($output) == '';
             // image not stored yet
             if ($immageNotLocated) {
