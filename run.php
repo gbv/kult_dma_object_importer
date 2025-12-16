@@ -308,13 +308,17 @@ while (!$ready) {
           $logger->debug('Bildname: ' . $saveFilename . ' Im Verzeichnis: ' . $id . ' Unterhalb von: ' . $settings['updater']['datafolder']);
           if (!$skipimage) {
             $command = sprintf(
-                'find %s -type d -name %s -exec find {} -type f -name %s \\; 2>/dev/null | head -n 1',
-                escapeshellarg($settings['updater']['datafolder']),
-                escapeshellarg($id),
-                escapeshellarg($saveFilename)
+                'locate --existing --basename %s | grep %s | head -n 1',
+                escapeshellarg($saveFilename),
+                escapeshellarg('/' . $id . '/')
             );
+            $output = shell_exec($command);
+            if ($output === null) {
+                $logger->error('Locate konnte nicht ausgeführt werden: ' . $command);
+            }
+            $immageNotLocated = trim($output) == '';
             // image not stored yet
-            if (empty(shell_exec($command))) {
+            if ($immageNotLocated) {
               $needUpdate=true;
               $logger->debug('Existiert noch nicht. Starte download.');
               if (!file_exists($downloadImageDirPath)) {
