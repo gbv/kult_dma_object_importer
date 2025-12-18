@@ -51,7 +51,7 @@ class BatchProcessor
             );
 
             if (!empty($this->settings->startFrom)) {
-                $url .= '&from=' . urlencode($this->settings->startFrom);
+                $url .= '&fromDate=' . urlencode($this->settings->startFrom);
             }
 
             $this->logger->debug('Startindex is now ' . $startIndex);
