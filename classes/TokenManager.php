@@ -1,19 +1,20 @@
 <?php
+namespace Denkmalatlas;
 
 class TokenManager
 {
   private $client;
   private $tokenStorage;
-  private $localSettings;
+  private $settings;
   private $logger;
   private $clientId;
   private $clientSecret;
 
-  public function __construct($client, $tokenStorage, $localSettings, $logger)
+  public function __construct($client, $tokenStorage, $settings, $logger)
   {
     $this->client = $client;
     $this->tokenStorage = $tokenStorage;
-    $this->localSettings = $localSettings;
+    $this->settings = $settings;
     $this->logger = $logger;
     $this->clientId = 'web-client';
     $this->clientSecret = 'foo';
@@ -47,10 +48,10 @@ class TokenManager
 
   private function fetchNewToken()
   {
-    $response = $this->client->request('POST', $this->localSettings['api_token_url'], [
+    $response = $this->client->request('POST', $this->settings->tokenUrl, [
       'form_params' => [
-        'username' => $this->localSettings['api_username'],
-        'password' => $this->localSettings['api_password'],
+        'username' => $this->settings->apiUsername,
+        'password' => $this->settings->apiPassword,
         'client_id' => $this->clientId,
         'client_secret' => $this->clientSecret,
         'grant_type' => 'password',
@@ -65,7 +66,7 @@ class TokenManager
 
   private function refreshToken($refreshToken)
   {
-    $response = $this->client->request('POST', $this->localSettings['api_token_url'], [
+    $response = $this->client->request('POST', $this->settings->tokenUrl, [
       'form_params' => [
         'grant_type' => 'refresh_token',
         'refresh_token' => $refreshToken,

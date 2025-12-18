@@ -1,4 +1,5 @@
-config/local_settings.php
+config/localSettings.php
+config/updateList.txt
 vendor
 local
 logs/*

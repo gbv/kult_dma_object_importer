@@ -21,7 +21,7 @@
   $monumentsNameSpace .=   '"';
 
   // make an key value list for those settings
-  $common_settings = [
+  $commonSettings = [
     'xmlHeader' => $monumentsXmlHeader,
     'monumentsNameSpace' => $monumentsNameSpace
   ];

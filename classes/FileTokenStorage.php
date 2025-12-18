@@ -1,5 +1,5 @@
 <?php
-
+namespace Denkmalatlas;
 class FileTokenStorage
 {
     private $file;

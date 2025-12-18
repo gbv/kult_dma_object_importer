@@ -1,4 +1,6 @@
 <?php
+namespace Denkmalatlas;
+
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ResponseInterface;

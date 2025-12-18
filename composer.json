@@ -3,5 +3,10 @@
         "monolog/monolog": "^3.0",
         "guzzlehttp/guzzle": "^7.0",
         "sabre/xml": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Denkmalatlas\\": "classes/"
+        }
     }
 }

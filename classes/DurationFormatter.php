@@ -1,4 +1,5 @@
 <?php
+namespace Denkmalatlas;
 class DurationFormatter
 {
     /**

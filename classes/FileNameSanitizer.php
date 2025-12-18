@@ -1,11 +1,11 @@
 <?php
-
+namespace Denkmalatlas;
 class FileNameSanitizer
 {
     public function sanitize(string $filename, string $replacement = '_'): string
     {
-        if (class_exists('Normalizer')) {
-            $filename = Normalizer::normalize($filename, Normalizer::FORM_KD);
+        if (class_exists('\\Normalizer')) {
+            $filename = \Normalizer::normalize($filename, \Normalizer::FORM_KD);
         }
 
         $map = [

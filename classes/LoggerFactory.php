@@ -1,17 +1,19 @@
 <?php
+namespace Denkmalatlas;
 
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\NativeMailerHandler;
-use Monolog\Handler\BufferHandler;
+use Denkmalatlas\SettingsManager;
 use Monolog\Formatter\HtmlFormatter;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\BufferHandler;
+use Monolog\Handler\NativeMailerHandler;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 class LoggerFactory
 {
-    public static function create(array $settings): Logger
+    public static function create(SettingsManager $settings): Logger
     {
-        $logger = new Logger($settings['name']);
+        $logger = new Logger($settings->name);
 
         // custom date format
         $dateFormat = "d.m.Y H:i:s";
@@ -20,21 +22,21 @@ class LoggerFactory
 
         // define log handler
         // set handler for stdout
-        $stdOutHandler = new StreamHandler('php://stdout', $settings['defaultLogLevel']);
+        $stdOutHandler = new StreamHandler('php://stdout', $settings->logLevel);
         $stdOutHandler->setFormatter($formatter);
         $logger->pushHandler($stdOutHandler);
 
         // set handler for file
-        $fileHandler = new StreamHandler($settings['path'], $settings['defaultLogLevel']);
+        $fileHandler = new StreamHandler($settings->path, $settings->logLevel);
         $fileHandler->setFormatter($formatter);
         $logger->pushHandler($fileHandler);
 
         // send handler for mail
         $mailHandler = new NativeMailerHandler(
-            $settings['mailRecipient'],
+            $settings->mailRecipient,
             '[Denkmalatlas] DenkXport Status',
-            $settings['mailSender'],
-            $settings['defaultLogLevel'],
+            $settings->mailSender,
+            $settings->logLevel,
             true,
             2000
         );
@@ -42,8 +44,8 @@ class LoggerFactory
 
         $bufferHandler = new BufferHandler(
             $mailHandler,
-            $settings['mailBufferLimit'],
-            $settings['defaultLogLevel'],
+            $settings->mailBufferLimit,
+            $settings->logLevel,
             true,
             true
         );

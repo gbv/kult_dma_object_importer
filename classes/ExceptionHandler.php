@@ -1,4 +1,6 @@
 <?php
+namespace Denkmalatlas;
+
 use Psr\Log\LoggerInterface;
 
 class ExceptionHandler
