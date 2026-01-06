@@ -3,6 +3,9 @@
 # make sure skript ends on error
 set -euo pipefail
 
+# update locate db
+updatedb
+
 # yesterday
 DATE=$(date -d "yesterday" +%F)
 
@@ -19,6 +22,3 @@ chown -R tomcat:tomcat /opt/digiverso/viewer/hotfolder/
 # start import
 find /opt/digiverso/viewer/coldfolder/ -maxdepth 1 -type f -name '*.xml' \
   -exec mv -t /opt/digiverso/viewer/hotfolder/ {} +
-
-# update locate db
-updatedb
