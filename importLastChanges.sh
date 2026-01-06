@@ -3,22 +3,30 @@
 # make sure skript ends on error
 set -euo pipefail
 
-# update locate db
+# log results
+LOGDIR="/opt/digiverso/kult_dma_object_importer/logs"
+LOGDATE=$(date +%F)
+LOGFILE="$LOGDIR/import-$LOGDATE.log"
+exec >>"$LOGFILE" 2>&1
+
+echo "Logfile created."
+
 updatedb
+echo "Locate updated."
 
-# yesterday
 DATE=$(date -d "yesterday" +%F)
+echo "Set Date to yesterday: $DATE"
 
-# get latest changes
 /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php --limit=100 --from="$DATE"
+echo "Got latest changes."
 
-# move media files
 find /opt/digiverso/viewer/coldfolder/ -maxdepth 1 -type d -name '*_media' \
   -exec mv -t /opt/digiverso/viewer/hotfolder/ {} +
+echo "Media files moved."
 
-# make tomcat owner to prevent errors on deleting
 chown -R tomcat:tomcat /opt/digiverso/viewer/hotfolder/
+echo "Tomcat own media files now."
 
-# start import
 find /opt/digiverso/viewer/coldfolder/ -maxdepth 1 -type f -name '*.xml' \
   -exec mv -t /opt/digiverso/viewer/hotfolder/ {} +
+echo "Hotfolder filled with import documents."
