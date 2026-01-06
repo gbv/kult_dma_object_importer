@@ -7,7 +7,7 @@ set -euo pipefail
 DATE=$(date -d "yesterday" +%F)
 
 # get latest changes
-/usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php --limit=100 -from="$DATE"
+/usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php --limit=100 --from="$DATE"
 
 # move media files
 find /opt/digiverso/viewer/coldfolder/ -maxdepth 1 -type d -name '*_media' \
