@@ -27,13 +27,13 @@ send_log_mail() {
   # Do not let mail sending change/interrupt the script shutdown.
   set +e
   if [ "${exit_code}" -eq 0 ]; then
-    local script_status="erfolgreich"
+    local script_status="success"
   else
-    local script_status="fehlgeschlagen"
+    local script_status="error"
   fi
-  local subject="[Denkmalatlas] Import der letzten Änderungen: ${script_status} (exit=${exit_code})"
+  local subject="[Denkmalatlas] Import last changes: ${script_status}"
 
-  echo "[$(date)] send_log_mail(): sending log mail to $LOG_RECIPIENT (exit=${exit_code})"
+  echo "[$(date)] Sending log mail."
 
   if [ -x "$SENDMAIL_BIN" ]; then
     {
