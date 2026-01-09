@@ -12,6 +12,7 @@ COLDDIR="/opt/digiverso/viewer/coldfolder/"
 LOGDATE=$(date +%F)
 LOGFILE="$LOGDIR/import-$LOGDATE.log"
 exec >>"$LOGFILE" 2>&1
+echo "[$(date)] importLastChanges.sh started."
 echo "[$(date)] Logfile created."
 
 # send logfile per mail when script ends (success or error)
@@ -22,7 +23,12 @@ SENDMAIL_BIN="${SENDMAIL_BIN:-/usr/sbin/sendmail}"
 
 send_log_mail() {
   local exit_code=$?
-  local subject="[Denkmalatlas] importLastChanges.sh ${LOGDATE} (exit=${exit_code})"
+  if [ "${exit_code}" -eq 0 ]; then
+    local script_status="erfolgreich"
+  else
+    local script_status="fehlgeschlagen"
+  fi
+  local subject="[Denkmalatlas] Import der letzten Änderungen: ${script_status}"
 
   if [ -x "$SENDMAIL_BIN" ]; then
     {
