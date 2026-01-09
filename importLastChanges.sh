@@ -57,8 +57,8 @@ send_log_mail() {
 }
 trap send_log_mail EXIT
 
-# import only when hotfolder is empty
-if [ -z "$(ls -A "$HOTDIR")" ]; then
+# import only when hotfolder and coldfolder are empty
+if [ -z "$(ls -A "$HOTDIR")" ] && [ -z "$(ls -A "$COLDDIR")" ]; then
 
   updatedb
   echo "[$(date)] Locate updated."
@@ -81,6 +81,6 @@ if [ -z "$(ls -A "$HOTDIR")" ]; then
   echo "[$(date)] Hotfolder filled with import documents."
 
 else
-  echo "[$(date)] Error. Hotfolder not empty. Import stoped."
+  echo "[$(date)] Error. Target directories are not empty. Import stopped."
   exit 3
 fi
