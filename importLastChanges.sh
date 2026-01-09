@@ -20,15 +20,20 @@ echo "[$(date)] Logfile created."
 LOG_RECIPIENT="${LOG_RECIPIENT:-tilo.neumann@gbv.de}"
 LOG_SENDER="${LOG_SENDER:-no-reply@gbv.de}"
 SENDMAIL_BIN="${SENDMAIL_BIN:-/usr/sbin/sendmail}"
+SENDMAIL_ARGS="${SENDMAIL_ARGS:--t -oi}"
 
 send_log_mail() {
   local exit_code=$?
+  # Do not let mail sending change/interrupt the script shutdown.
+  set +e
   if [ "${exit_code}" -eq 0 ]; then
     local script_status="erfolgreich"
   else
     local script_status="fehlgeschlagen"
   fi
-  local subject="[Denkmalatlas] Import der letzten Änderungen: ${script_status}"
+  local subject="[Denkmalatlas] Import der letzten Änderungen: ${script_status} (exit=${exit_code})"
+
+  echo "[$(date)] send_log_mail(): sending log mail to $LOG_RECIPIENT (exit=${exit_code})"
 
   if [ -x "$SENDMAIL_BIN" ]; then
     {
@@ -38,11 +43,17 @@ send_log_mail() {
       echo "MIME-Version: 1.0"
       echo "Content-Type: text/plain; charset=UTF-8"
       echo
+      echo "Status: ${script_status}"
+      echo "Exit-Code: ${exit_code}"
+      echo "Timestamp: $(date)"
+      echo
       cat "$LOGFILE"
-    } | "$SENDMAIL_BIN" -t
+    } | "$SENDMAIL_BIN" $SENDMAIL_ARGS
   else
     echo "[$(date)] Warning: sendmail not found/executable at '$SENDMAIL_BIN' - cannot mail log."
   fi
+
+  return 0
 }
 trap send_log_mail EXIT
 
@@ -71,4 +82,5 @@ if [ -z "$(ls -A "$HOTDIR")" ]; then
 
 else
   echo "[$(date)] Error. Hotfolder not empty. Import stoped."
+  exit 3
 fi
