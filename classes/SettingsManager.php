@@ -27,6 +27,7 @@ class SettingsManager
   public string $monumentsNameSpace;
   public bool $updateById;
   public bool $skipImage;
+  public bool $forceImage;
   public bool $idMapping;
   public bool $missingImagesOnly;
   public array $startParameter;
@@ -76,6 +77,7 @@ class SettingsManager
     // invert flags - a given flag parameter has false as value
     $this->updateById = isset($parameterSettings["preselect"]);
     $this->skipImage = isset($parameterSettings["skip-images"]);
+    $this->forceImage = isset($parameterSettings["force-images"]);
     $this->idMapping = isset($parameterSettings["id-mapping"]);
     $this->missingImagesOnly = isset($parameterSettings["missing-images-only"]);
     $this->startParameter = $parameterSettings ?? [];

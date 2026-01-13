@@ -29,6 +29,9 @@
 # do not get _media just create denkxweb files
 # --skip-images
 #
+# do not check if image exist, download again
+# --force-images
+#
 # do not create mapping and redirect files for old to new ids
 # --id-mapping
 #

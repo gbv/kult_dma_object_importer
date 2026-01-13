@@ -139,9 +139,9 @@ class BatchProcessor
                             if (!$this->settings->skipImage) {
                                 $located = $this->imageDownloader->locateImage($saveFilename, $id);
                                 $immageNotLocated = $located === null;
-                                if ($immageNotLocated) {
+                                if ($immageNotLocated || $this->settings->forceImage) {
                                     $needUpdate = true;
-                                    $this->logger->debug('Existiert noch nicht. Starte download.');
+                                    $this->logger->debug('Existiert noch nicht oder soll ersetzt werden. Starte download.');
                                     if (!file_exists($downloadImageDirPath)) {
                                         mkdir($downloadImageDirPath, 0777, true);
                                     }
