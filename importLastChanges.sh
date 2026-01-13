@@ -66,7 +66,7 @@ if [ -z "$(ls -A "$HOTDIR")" ] && [ -z "$(ls -A "$COLDDIR")" ]; then
   DATE=$(date -d "yesterday" +%F)
   echo "[$(date)] Set Date to yesterday: $DATE"
 
-  /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php --limit=100 --from="$DATE"
+  /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php --limit=100 --from="$DATE" --force-images
   echo "[$(date)] Got latest changes."
 
   find "$COLDDIR" -maxdepth 1 -type d -name '*_media' \
