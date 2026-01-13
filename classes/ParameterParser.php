@@ -16,6 +16,7 @@ class ParameterParser
             "level:",
             "preselect",
             "skip-images",
+            "force-images",
             "id-mapping",
             "missing-images-only",
             "from:"
