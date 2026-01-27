@@ -20,7 +20,9 @@ class SettingsManager
   public string $mailRecipient;
   public string $mailSender;
   public string $dataFolderPath;
-  public string $exportUrl;
+  public string $exportAllObjectsUrl;
+  public string $exportAllObjectIdsUrl;
+  public string $exportSingleObjectUrl;
   public string $tokenUrl;
   public string $projectUrl;
   public string $xmlHeader;
@@ -64,7 +66,9 @@ class SettingsManager
     $this->mailRecipient = $localSettings['mailRecipient'] ?? '';
     $this->mailSender = $localSettings['mailSender'] ?? '';
     $this->dataFolderPath = $localSettings['dataFolderPath'] ?? '';
-    $this->exportUrl = $localSettings['apiExportUrl'] ?? '';
+    $this->exportAllObjectsUrl = ($localSettings['apiBaseUrl'] ?? '') . ($localSettings['apiPaths']['allObjects'] ?? '');
+    $this->exportAllObjectIdsUrl = ($localSettings['apiBaseUrl'] ?? '') . ($localSettings['apiPaths']['allObjectIds'] ?? '');
+    $this->exportSingleObjectUrl = ($localSettings['apiBaseUrl'] ?? '') . ($localSettings['apiPaths']['singleObject'] ?? '');
     $this->tokenUrl = $localSettings['apiTokenUrl'] ?? '';
     $this->projectUrl = $localSettings['projectUrl'] ?? '';
 

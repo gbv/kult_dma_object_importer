@@ -44,7 +44,7 @@ class BatchProcessor
             $endIndex = $startIndex + $this->settings->batchSize;
             $url = sprintf(
                 '%s?limit=%d&offset=%d',
-                $this->settings->exportUrl,
+                $this->settings->exportAllObjectsUrl,
                 $this->settings->batchSize,
                 $startIndex
 

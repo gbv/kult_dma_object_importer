@@ -9,7 +9,12 @@
     'coldFolderPath' => '',
     'hotFolderPath' => '',
     'dataFolderPath' => '',
-    'apiExportUrl' => '',
+    'apiBaseUrl' => '',
+    'apiPaths' => [
+      'allObjects' => '',
+      'allObjectIds' => '',
+      'singleObject' => ''
+    ],
     'apiTokenUrl' => '',
     'projectUrl' => '',
     'apiUsername'=>'',
