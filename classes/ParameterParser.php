@@ -14,6 +14,7 @@ class ParameterParser
             "offset:",
             "limit:",
             "level:",
+            "uuid:",
             "preselect",
             "skip-images",
             "force-images",

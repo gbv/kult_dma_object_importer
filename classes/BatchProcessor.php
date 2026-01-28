@@ -41,21 +41,28 @@ class BatchProcessor
     {
         $batchFinished = false;
         while (!$batchFinished) {
-            $endIndex = $startIndex + $this->settings->batchSize;
-            $url = sprintf(
-                '%s?limit=%d&offset=%d',
-                $this->settings->exportAllObjectsUrl,
-                $this->settings->batchSize,
-                $startIndex
+            // Check if uuid is provided for single object import
+            if ( !empty($this->settings->uuid) ) {
+                $endIndex = $startIndex;  // For single object, start and end index are the same
+                $url = $this->settings->exportSingleObjectUrl . '?uuid=' . urlencode($this->settings->uuid);
+                $this->logger->debug('Single object import. Request to ' . $url);
+            } else {
+                // Normal batch import
+                $endIndex = $startIndex + $this->settings->batchSize;
+                $url = sprintf(
+                    '%s?limit=%d&offset=%d',
+                    $this->settings->exportAllObjectsUrl,
+                    $this->settings->batchSize,
+                    $startIndex
+                );
 
-            );
+                if (!empty($this->settings->startFrom)) {
+                    $url .= '&fromDate=' . urlencode($this->settings->startFrom);
+                }
 
-            if (!empty($this->settings->startFrom)) {
-                $url .= '&fromDate=' . urlencode($this->settings->startFrom);
+                $this->logger->debug('Startindex is now ' . $startIndex);
+                $this->logger->debug('Request to ' . $url);
             }
-
-            $this->logger->debug('Startindex is now ' . $startIndex);
-            $this->logger->debug('Request to ' . $url);
 
             $maxRetries = 3;
             $attempt = 0;
@@ -178,16 +185,23 @@ class BatchProcessor
                     }
                 }
             }
-            $elapsed = microtime(true) - $startTime;
-            $startIndex += $this->settings->batchSize;
-            $this->logger->info('Reached ' . $monumentsCounter . ' Objects. Offset is now: ' . $startIndex . ' This export took ' . DurationFormatter::format($elapsed) . ' so far.');
-            $maxOffset = (int) $this->settings->maxCount;
-            if ($maxOffset > 0 && $startIndex >= $maxOffset) {
-                $this->logger->info('Stopping export. Offset limit of ' . $maxOffset . ' reached. Current start index is: ' . $startIndex);
+
+            // For single object import, stop after processing
+            if ( !empty($this->settings->uuid) ) {
                 $batchFinished = true;
-            }
-            if ($countOfRecordsInXMLFile < $this->settings->batchSize) {
-                $batchFinished = true;
+            } else {
+                // For batch import, continue with next batch
+                $elapsed = microtime(true) - $startTime;
+                $startIndex += $this->settings->batchSize;
+                $this->logger->info('Reached ' . $monumentsCounter . ' Objects. Offset is now: ' . $startIndex . ' This export took ' . DurationFormatter::format($elapsed) . ' so far.');
+                $maxOffset = (int) $this->settings->maxCount;
+                if ($maxOffset > 0 && $startIndex >= $maxOffset) {
+                    $this->logger->info('Stopping export. Offset limit of ' . $maxOffset . ' reached. Current start index is: ' . $startIndex);
+                    $batchFinished = true;
+                }
+                if ($countOfRecordsInXMLFile < $this->settings->batchSize) {
+                    $batchFinished = true;
+                }
             }
         }
         return [$monumentsCounter, $monumentsCounterPutToTargetFolder];

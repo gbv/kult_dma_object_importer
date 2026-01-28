@@ -36,6 +36,7 @@ class SettingsManager
   public bool $missingImagesOnly;
   public array $startParameter;
   public string $startFrom;
+  public string $uuid;
 
   public function __construct($argv)
   {
@@ -93,6 +94,7 @@ class SettingsManager
     $this->maxCount = $parameterSettings["results"] ?? 1000000;
     $this->startIndex = $parameterSettings["offset"] ?? 0;
     $this->startFrom = $parameterSettings["from"] ?? '';
+    $this->uuid = $parameterSettings["uuid"] ?? '';
     $this->targetFolder = $localSettings['coldFolderPath'] ?? '';
     if (isset($parameterSettings["folder"])) {
       switch ($parameterSettings["folder"]) {

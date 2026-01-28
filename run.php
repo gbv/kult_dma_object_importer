@@ -80,7 +80,12 @@ $monumentsCounter = 0;
 $monumentsCounterPutToTargetFolder = 0;
 $startTime = microtime(true);
 
-$logger->debug('Starting the batch process. Batchsize: ' . ($settings->batchSize));
+if ( !empty($settings->uuid) ) {
+    $logger->debug('Starting single object import for uuid: ' . $settings->uuid);
+} else {
+    $logger->debug('Starting the batch process. Batchsize: ' . ($settings->batchSize));
+}
+
 $batchProcessor = new BatchProcessor(
   $settings,
   $logger,
