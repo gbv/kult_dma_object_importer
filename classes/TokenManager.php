@@ -25,6 +25,7 @@ class TokenManager
     // do not use token storage
     // simply get new token
     if ($force) {
+      $this->logger->debug('Forced to get new token.');
       return $this->fetchNewToken();
     }
 
@@ -33,16 +34,19 @@ class TokenManager
 
     // check for existing valid token
     if ($tokenData && $tokenData['expires_at'] > time()) {
+      $this->logger->debug('Found token in store.');
       return $tokenData['access_token'];
     }
 
     // check for refresh token
     if ($tokenData && !empty($tokenData['refresh_token'])) {
+      $this->logger->debug('Token expired. Use refresh token to get new one.');
       return $this->refreshToken($tokenData['refresh_token']);
     }
 
     // if no token was found in storage
     // get new token
+    $this->logger->debug('No valid token found. Get new token.');
     return $this->fetchNewToken();
   }
 
@@ -60,12 +64,14 @@ class TokenManager
     ]);
     $data = json_decode($response->getBody(), true);
 
+    $this->logger->debug('Token fetched or error was not handled. Return Token: ' . $data['access_token']);
     $this->storeToken($data);
     return $data['access_token'];
   }
 
   private function refreshToken($refreshToken)
   {
+    $this->logger->debug('Try to get new token with this refresh token: ' . $refreshToken);
     $response = $this->client->request('POST', $this->settings->tokenUrl, [
       'form_params' => [
         'grant_type' => 'refresh_token',
@@ -77,6 +83,7 @@ class TokenManager
 
     $data = json_decode($response->getBody(), true);
 
+    $this->logger->debug('Token refreshed or error was not handled. Return Token: ' . $data['access_token']);
     $this->storeToken($data);
     return $data['access_token'];
   }
