@@ -24,6 +24,8 @@ class SettingsManager
   public string $exportAllObjectIdsUrl;
   public string $exportSingleObjectUrl;
   public string $tokenUrl;
+  public string $apiUsername;
+  public string $apiPassword;
   public string $projectUrl;
   public string $xmlHeader;
   public string $monumentsNameSpace;
@@ -70,6 +72,8 @@ class SettingsManager
     $this->exportAllObjectIdsUrl = ($localSettings['apiBaseUrl'] ?? '') . ($localSettings['apiPaths']['allObjectIds'] ?? '');
     $this->exportSingleObjectUrl = ($localSettings['apiBaseUrl'] ?? '') . ($localSettings['apiPaths']['singleObject'] ?? '');
     $this->tokenUrl = $localSettings['apiTokenUrl'] ?? '';
+    $this->apiUsername = $localSettings['apiUsername'] ?? '';
+    $this->apiPassword = $localSettings['apiPassword'] ?? '';
     $this->projectUrl = $localSettings['projectUrl'] ?? '';
 
     // set properties from common settings file

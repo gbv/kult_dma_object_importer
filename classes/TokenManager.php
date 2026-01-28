@@ -71,21 +71,26 @@ class TokenManager
 
   private function refreshToken($refreshToken)
   {
-    $this->logger->debug('Try to get new token with this refresh token: ' . $refreshToken);
-    $response = $this->client->request('POST', $this->settings->tokenUrl, [
-      'form_params' => [
-        'grant_type' => 'refresh_token',
-        'refresh_token' => $refreshToken,
-        'client_id' => $this->clientId,
-        'client_secret' => $this->clientSecret
-      ]
-    ]);
+    try {
+      $this->logger->debug('Try to get new token with this refresh token: ' . $refreshToken);
+      $response = $this->client->request('POST', $this->settings->tokenUrl, [
+        'form_params' => [
+          'grant_type' => 'refresh_token',
+          'refresh_token' => $refreshToken,
+          'client_id' => $this->clientId,
+          'client_secret' => $this->clientSecret
+        ]
+      ]);
 
-    $data = json_decode($response->getBody(), true);
+      $data = json_decode($response->getBody(), true);
 
-    $this->logger->debug('Token refreshed or error was not handled. Return Token: ' . $data['access_token']);
-    $this->storeToken($data);
-    return $data['access_token'];
+      $this->logger->debug('Token refreshed or error was not handled. Return Token: ' . $data['access_token']);
+      $this->storeToken($data);
+      return $data['access_token'];
+    } catch (\Exception $e) {
+      $this->logger->warning('Refresh token failed: ' . $e->getMessage() . '. Fetching new token instead.');
+      return $this->fetchNewToken();
+    }
   }
 
   private function storeToken($data)
