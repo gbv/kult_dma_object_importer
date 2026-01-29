@@ -18,7 +18,8 @@
     'apiTokenUrl' => '',
     'projectUrl' => '',
     'apiUsername'=>'',
-    'apiPassword' => ''
+    'apiPassword' => '',
+    'solrBaseUrl' => ''
   ];
 
 ?>

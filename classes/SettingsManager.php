@@ -27,6 +27,7 @@ class SettingsManager
   public string $apiUsername;
   public string $apiPassword;
   public string $projectUrl;
+  public string $solrBaseUrl;
   public string $xmlHeader;
   public string $monumentsNameSpace;
   public bool $updateById;
@@ -34,6 +35,8 @@ class SettingsManager
   public bool $forceImage;
   public bool $idMapping;
   public bool $missingImagesOnly;
+  public bool $noPurge;
+  public bool $purgeOnly;
   public array $startParameter;
   public string $startFrom;
   public string $uuid;
@@ -76,6 +79,7 @@ class SettingsManager
     $this->apiUsername = $localSettings['apiUsername'] ?? '';
     $this->apiPassword = $localSettings['apiPassword'] ?? '';
     $this->projectUrl = $localSettings['projectUrl'] ?? '';
+    $this->solrBaseUrl = $localSettings['solrBaseUrl'] ?? '';
 
     // set properties from common settings file
     $this->xmlHeader = $commonSettings['xmlHeader'] ?? '';
@@ -89,6 +93,8 @@ class SettingsManager
     $this->forceImage = isset($parameterSettings["force-images"]);
     $this->idMapping = isset($parameterSettings["id-mapping"]);
     $this->missingImagesOnly = isset($parameterSettings["missing-images-only"]);
+    $this->noPurge = isset($parameterSettings["no-purge"]);
+    $this->purgeOnly = isset($parameterSettings["purge-only"]);
     $this->startParameter = $parameterSettings ?? [];
     $this->batchSize = $parameterSettings["limit"] ?? 1000;
     $this->maxCount = $parameterSettings["results"] ?? 1000000;

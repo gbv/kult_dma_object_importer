@@ -20,7 +20,9 @@ class ParameterParser
             "force-images",
             "id-mapping",
             "missing-images-only",
-            "from:"
+            "from:",
+            "no-purge",
+            "purge-only"
         ]);
 
         return $startParameter;

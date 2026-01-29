@@ -14,6 +14,7 @@ use Denkmalatlas\ImageDownloader;
 use Denkmalatlas\LoggerFactory;
 use Denkmalatlas\MappingWriter;
 use Denkmalatlas\MonumentXmlProcessor;
+use Denkmalatlas\PurgeFileGenerator;
 use Denkmalatlas\SettingsManager;
 use Denkmalatlas\TokenManager;
 use GuzzleHttp\Client;
@@ -71,9 +72,31 @@ $mappingWriter = new MappingWriter($settings);
 $logger->debug('Initialize xml processor.');
 $monumentXmlProcessor = new MonumentXmlProcessor($settings);
 
-// create dir for original xml-batches
 $logger->debug('Create directory to store request XML.');
 mkdir($settings->originalXMLPath, 0777, true);
+
+if (!$settings->noPurge) {
+    $logger->info('Check for objects to purge.');
+
+    $purgeFileGenerator = new PurgeFileGenerator(
+        $settings,
+        $logger,
+        $apiRequester
+    );
+
+    $exitCode = $purgeFileGenerator->generatePurgeFiles();
+    if ($exitCode !== 0) {
+        $logger->error('Purge failed with exit code ' . $exitCode . '. Aborting.');
+        exit($exitCode);
+    }
+
+    if ($settings->purgeOnly) {
+      $logger->info('Purge completed. Exiting.');
+      exit(0);
+    }
+} else {
+  $logger->info('Step disabled. Skipping purge.');
+}
 
 // set batch variables
 $monumentsCounter = 0;
