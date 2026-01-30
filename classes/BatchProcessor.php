@@ -142,8 +142,9 @@ class BatchProcessor
                         foreach ($monument->images->image as $image) {
                             $filename = (string) $image->filename;
                             $saveFilename = FileNameSanitizer::sanitizeStatic($filename);
-                            $this->logger->debug('Bildname: ' . $saveFilename . ' Im Verzeichnis: ' . $id . ' Unterhalb von: ' . $this->settings->dataFolderPath);
+                            // this part only when images are needed
                             if (!$this->settings->skipImage) {
+                                $this->logger->debug('Bildname: ' . $saveFilename . ' Im Verzeichnis: ' . $id . ' Unterhalb von: ' . $this->settings->dataFolderPath);
                                 $located = $this->imageDownloader->locateImage($saveFilename, $id);
                                 $immageNotLocated = $located === null;
                                 if ($immageNotLocated || $this->settings->forceImage) {
@@ -157,7 +158,10 @@ class BatchProcessor
                                 } else {
                                     $this->logger->debug('Existiert. Gehe zum nächsten Bild.');
                                 }
+                            } else {
+                              $this->logger->debug('Bildprüfung übersprungen.');
                             }
+                            // set new image path even when image check was skiped
                             $image->standard['url'] = $id . '_media/' . $saveFilename;
                         }
                     }

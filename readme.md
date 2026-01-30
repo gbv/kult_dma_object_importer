@@ -94,3 +94,14 @@ if not set, every import checks for no longer published objects
 do nothing other that creating purge files \
 for objects that has to get removed from index \
 if not set, purge and export will be done
+
+# Beispiele
+Gesamtexport ohne Bilder
+```
+sudo /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php --limit=100 --no-purge --skip-images
+```
+Oder per im screen per alias
+```
+screen -r
+denkxport --limit=100 --no-purge --skip-images
+```
