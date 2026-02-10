@@ -44,8 +44,8 @@ class PurgeFileGenerator
 
         if ( $countedPublicIds != $publicReportedTotal ) {
           $loggerMessage = sprintf(
-              'Purge stoped.'
-              . 'Counted public IDs (%d) does not fit'
+              'Purge stoped. '
+              . 'Counted public IDs (%d) does not fit '
               . 'reported number of IDs from api (%d).',
               $countedPublicIds,
               $publicReportedTotal
@@ -56,9 +56,9 @@ class PurgeFileGenerator
 
         if ( $countedPublicIds < $this->settings->minExpectedPublicIds ) {
           $loggerMessage = sprintf(
-              'Purge stoped.'
-              . 'Counted public IDs (%d) does not fit'
-              . 'expected number of IDs by developer (%d).',
+              'Purge stoped. '
+              . 'Counted public IDs (%d) does not fit '
+              . 'expected min number of IDs by developer (%d).',
               $countedPublicIds,
               $this->settings->minExpectedPublicIds
           );
