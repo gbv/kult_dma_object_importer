@@ -40,6 +40,7 @@ class SettingsManager
   public array $startParameter;
   public string $startFrom;
   public string $uuid;
+  public int $minExpectedPublicIds;
 
   public function __construct($argv)
   {
@@ -80,6 +81,7 @@ class SettingsManager
     $this->apiPassword = $localSettings['apiPassword'] ?? '';
     $this->projectUrl = $localSettings['projectUrl'] ?? '';
     $this->solrBaseUrl = $localSettings['solrBaseUrl'] ?? '';
+    $this->minExpectedPublicIds = $localSettings['minExpectedPublicIds'] ?? '120000';
 
     // set properties from common settings file
     $this->xmlHeader = $commonSettings['xmlHeader'] ?? '';

@@ -19,26 +19,54 @@ class PurgeFileGenerator
         $this->apiRequester = $apiRequester;
     }
 
-    public function generatePurgeFiles(): int
+    public function generatePurgeFiles(): void
     {
         $this->logger->info('Starting purge marker generation.');
         $purgeList = "";
 
-        // Load public IDs
-        $this->logger->info('Loading public IDs for membership test...');
+        $this->logger->info('Get public IDs from NFIS to compare with solr index.');
         $publicData = $this->getPublicIds();
+        if ( empty($publicData) ) {
+          $this->logger->error('Purge stoped. At least one api request to NFIS faild.');
+          return;
+        }
+
         $publicIds = $publicData['publicIds'] ?? [];
         $publicReportedTotal = $publicData['total'] ?? null;
         $publicSet = array_flip($publicIds);
-        $this->logger->info('Public IDs loaded: ' . count($publicIds) . '. Reported total: ' . ($publicReportedTotal ?? 'unknown'));
+        $this->logger->info(
+          'Public IDs loaded: '
+          . count($publicIds)
+          . '. Reported total: '
+          . ($publicReportedTotal ?? 'unknown'));
 
-        if ( count($publicIds) != $publicReportedTotal && count($publicIds) > 100000 ) {
-          $this->logger->error('Something is badly wrong. Purge stoped.');
-          return 0;
+        $countedPublicIds = count($publicIds);
+
+        if ( $countedPublicIds != $publicReportedTotal ) {
+          $loggerMessage = sprintf(
+              'Purge stoped.'
+              . 'Counted public IDs (%d) does not fit'
+              . 'reported number of IDs from api (%d).',
+              $countedPublicIds,
+              $publicReportedTotal
+          );
+          $this->logger->error($loggerMessage);
+          return;
         }
 
-        // Load Solr known IDs
-        $this->logger->info('Loading known IDs from Solr...');
+        if ( $countedPublicIds < $this->settings->minExpectedPublicIds ) {
+          $loggerMessage = sprintf(
+              'Purge stoped.'
+              . 'Counted public IDs (%d) does not fit'
+              . 'expected number of IDs by developer (%d).',
+              $countedPublicIds,
+              $this->settings->minExpectedPublicIds
+          );
+          $this->logger->error($loggerMessage);
+          return;
+        }
+
+        $this->logger->info('Loading known IDs from solr Index.');
         $knownData = $this->getKnownIds();
         $knownIds = $knownData['knownIds'] ?? [];
         $this->logger->info('Solr IDs loaded: ' . count($knownIds));
@@ -65,13 +93,14 @@ class PurgeFileGenerator
             }
         }
 
-        $this->logger->info('Purge markers generation completed. Solr count: ' . count($knownIds) . ', public count: ' . count($publicIds) . ', markers created: ' . $written . ' (folder: ' . $this->settings->targetFolder . ')');
+        $this->logger->info(
+          'Purge markers generation completed. Solr count: ' . count($knownIds)
+          . ', public count: ' . count($publicIds)
+          . ', markers created: ' . $written
+          . ' (folder: ' . $this->settings->targetFolder . ')');
         $this->logger->info($purgeList);
-        if ($publicReportedTotal !== null && $publicReportedTotal != count($publicIds)) {
-            $this->logger->warning('Mismatch between reported public total (' . $publicReportedTotal . ') and collected public IDs (' . count($publicIds) . ').');
-        }
 
-        return 0;
+        return;
     }
     private function getPublicIds(): array
     {
@@ -87,7 +116,7 @@ class PurgeFileGenerator
             $this->logger->debug('Fetching public batch: ' . $url);
 
             $attempt = 0;
-            $maxAttempts = 3;
+            $maxAttempts = 5;
             $data = null;
 
             while ($attempt < $maxAttempts) {
@@ -104,8 +133,15 @@ class PurgeFileGenerator
             }
 
             if ($data === null) {
-                $this->logger->error('Failed to fetch/parse public listing at offset ' . $offset . ' after ' . $maxAttempts . ' attempts. Aborting public fetch.');
-                break;
+                $loggerMessage = sprintf(
+                    'Fetching public IDs stoped.'
+                    . 'Failed to get listing at offset %d'
+                    . 'after %d attempts.',
+                    $offset,
+                    $maxAttempts
+                );
+                $this->logger->error($loggerMessage);
+                return [];
             }
 
             if ($reportedTotal === null) {
@@ -195,11 +231,5 @@ class PurgeFileGenerator
                 'timestamp' => date('Y-m-d H:i:s')
             ];
         }
-    }
-
-    public function getKnownIdsAsJson(): string
-    {
-        $knownIdsData = $this->getKnownIds();
-        return json_encode($knownIdsData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }

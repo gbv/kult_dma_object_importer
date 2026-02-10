@@ -19,7 +19,8 @@
     'projectUrl' => '',
     'apiUsername'=>'',
     'apiPassword' => '',
-    'solrBaseUrl' => ''
+    'solrBaseUrl' => '',
+    'minExpectedPublicIds' => ''
   ];
 
 ?>

@@ -77,25 +77,18 @@ mkdir($settings->originalXMLPath, 0777, true);
 
 if (!$settings->noPurge) {
     $logger->info('Check for objects to purge.');
-
     $purgeFileGenerator = new PurgeFileGenerator(
         $settings,
         $logger,
         $apiRequester
     );
-
-    $exitCode = $purgeFileGenerator->generatePurgeFiles();
-    if ($exitCode !== 0) {
-        $logger->error('Purge failed with exit code ' . $exitCode . '. Aborting.');
-        exit($exitCode);
-    }
-
+    $purgeFileGenerator->generatePurgeFiles();
     if ($settings->purgeOnly) {
       $logger->info('Purge completed. Exiting.');
       exit(0);
     }
 } else {
-  $logger->info('Step disabled. Skipping purge.');
+  $logger->info('Skipping purge. Step was disabled.');
 }
 
 // set batch variables
