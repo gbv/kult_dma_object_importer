@@ -105,3 +105,8 @@ Oder per im screen per alias
 screen -r
 denkxport --limit=100 --no-purge --skip-images
 ```
+
+Export der letzten Änderungen mit Bildern
+```
+denkxport --limit=100 --from="2026-05-03" --force-images --no-purge
+```
