@@ -21,6 +21,7 @@ class ParameterParser
             "id-mapping",
             "missing-images-only",
             "from:",
+            "help",
             "no-purge",
             "purge-only"
         ]);

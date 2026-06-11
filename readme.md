@@ -11,8 +11,10 @@ sudo /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php
 ```
 
 # Parameter
+
 ## Overview
 ```
+--help
 --results
 --folder
 --offset
@@ -31,6 +33,8 @@ sudo /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php
 --purge-only
 ```
 ##   #Details
+### --help
+prints commands and examples from the readme 
 ### --results=1000000
 max number of object script will get \
 it is also the offset limit \
@@ -95,18 +99,18 @@ do nothing other that creating purge files \
 for objects that has to get removed from index \
 if not set, purge and export will be done
 
-# Beispiele
-Gesamtexport ohne Bilder
+# Examples
+Complete export without images:
 ```
 sudo /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php --limit=100 --no-purge --skip-images
 ```
-Oder per im screen per alias
+If you like to use a screen and an alias for the command above:
 ```
 screen -r
 denkxport --limit=100 --no-purge --skip-images
 ```
 
-Export der letzten Änderungen mit Bildern
+Export only last changes with images:
 ```
 denkxport --limit=100 --from="2026-05-03" --force-images --no-purge
 ```

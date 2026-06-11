@@ -37,6 +37,7 @@ class SettingsManager
   public bool $missingImagesOnly;
   public bool $noPurge;
   public bool $purgeOnly;
+  public bool $helpRequested;
   public array $startParameter;
   public string $startFrom;
   public string $uuid;
@@ -97,6 +98,7 @@ class SettingsManager
     $this->missingImagesOnly = isset($parameterSettings["missing-images-only"]);
     $this->noPurge = isset($parameterSettings["no-purge"]);
     $this->purgeOnly = isset($parameterSettings["purge-only"]);
+    $this->helpRequested = isset($parameterSettings["help"]);
     $this->startParameter = $parameterSettings ?? [];
     $this->batchSize = $parameterSettings["limit"] ?? 1000;
     $this->maxCount = $parameterSettings["results"] ?? 1000000;
