@@ -9,6 +9,7 @@ use Denkmalatlas\ApiRequester;
 use Denkmalatlas\BatchProcessor;
 use Denkmalatlas\DurationFormatter;
 use Denkmalatlas\ExceptionHandler;
+use Denkmalatlas\HelpPrinter;
 use Denkmalatlas\FileTokenStorage;
 use Denkmalatlas\ImageDownloader;
 use Denkmalatlas\LoggerFactory;
@@ -19,7 +20,6 @@ use Denkmalatlas\SettingsManager;
 use Denkmalatlas\TokenManager;
 use GuzzleHttp\Client;
 
-// build settings
 $settings = new SettingsManager($argv);
 
 $logger = LoggerFactory::create($settings);
@@ -32,6 +32,8 @@ $logger->info(
   'Export started with those parameters: ',
 $settings->startParameter
 );
+
+HelpPrinter::printHelp($settings);
 
 $logger->debug('Initialize guzzle as request client.');
 $client = new Client([
