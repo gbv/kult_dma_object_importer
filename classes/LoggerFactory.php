@@ -18,7 +18,7 @@ class LoggerFactory
         // custom date format
         $dateFormat = "d.m.Y H:i:s";
         $output = "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n";
-        $formatter = new LineFormatter($output, $dateFormat);
+        $formatter = new LineFormatter($output, $dateFormat, true, true);
 
         // define log handler
         // set handler for stdout

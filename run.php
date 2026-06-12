@@ -21,19 +21,17 @@ use Denkmalatlas\TokenManager;
 use GuzzleHttp\Client;
 
 $settings = new SettingsManager($argv);
+HelpPrinter::printHelp($settings);
 
 $logger = LoggerFactory::create($settings);
 $logger->debug(
-  'Logger initialized. Script is running with those settings: ',
-  (array)
-  $settings
+  'Logger initialized. Script is running with those settings: '. PHP_EOL .
+  print_r($settings, true)
 );
 $logger->info(
-  'Export started with those parameters: ',
-$settings->startParameter
+  'Export started with those parameters:' . PHP_EOL .
+  print_r($settings->startParameter, true)
 );
-
-HelpPrinter::printHelp($settings);
 
 $logger->debug('Initialize guzzle as request client.');
 $client = new Client([
@@ -123,11 +121,15 @@ $batchProcessor = new BatchProcessor(
 $elapsed = microtime(true) - $startTime;
 
 $loggerMessage = sprintf(
-  'Export finished after %s. Got %d objects. Added %d objects to folder: %s',
+  'Export finished.' . PHP_EOL .
+  'Time: %s' . PHP_EOL .
+  'Objects: %d' . PHP_EOL .
+  'Target: %s' . PHP_EOL .
+  'Object added to target: %d',
   DurationFormatter::format($elapsed),
   $monumentsCounter,
-  $monumentsCounterPutToTargetFolder,
-  $settings->targetFolder
+  $settings->targetFolder,
+  $monumentsCounterPutToTargetFolder
 );
 $logger->info($loggerMessage);
 exit(0);

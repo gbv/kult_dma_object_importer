@@ -21,13 +21,13 @@ class PurgeFileGenerator
 
     public function generatePurgeFiles(): void
     {
-        $this->logger->info('Starting purge marker generation.');
+        $this->logger->info('Starting purge files generation.');
         $purgeList = "";
 
-        $this->logger->info('Get public IDs from NFIS to compare with solr index.');
+        $this->logger->info('Get public IDs from NFIS to compare with Solr index.');
         $publicData = $this->getPublicIds();
         if ( empty($publicData) ) {
-          $this->logger->error('Purge stoped. At least one api request to NFIS faild.');
+          $this->logger->error('Purge stoped. At least one API request to NFIS faild.');
           return;
         }
 
@@ -36,19 +36,19 @@ class PurgeFileGenerator
         $publicSet = array_flip($publicIds);
         $this->logger->info(
           'Public IDs loaded: '
-          . count($publicIds)
-          . '. Reported total: '
+          . count($publicIds) . PHP_EOL
+          . 'Reported total: '
           . ($publicReportedTotal ?? 'unknown'));
 
         $countedPublicIds = count($publicIds);
 
         if ( $countedPublicIds != $publicReportedTotal ) {
           $loggerMessage = sprintf(
-              'Purge stoped. '
-              . 'Counted public IDs (%d) does not fit '
-              . 'reported number of IDs from api (%d).',
-              $countedPublicIds,
-              $publicReportedTotal
+              'Purge stoped. Reported IDs from API does not fit counted IDs by script.'. PHP_EOL
+              . 'Reported: %d' . PHP_EOL
+              . 'Counted: %d',
+              $publicReportedTotal,
+              $countedPublicIds
           );
           $this->logger->error($loggerMessage);
           return;
@@ -56,9 +56,9 @@ class PurgeFileGenerator
 
         if ( $countedPublicIds < $this->settings->minExpectedPublicIds ) {
           $loggerMessage = sprintf(
-              'Purge stoped. '
-              . 'Counted public IDs (%d) does not fit '
-              . 'expected min number of IDs by developer (%d).',
+              'Purge stoped. Counted IDs does not fit expected min number.' . PHP_EOL
+              . 'Counted: %d' . PHP_EOL
+              . 'Expected: %d',
               $countedPublicIds,
               $this->settings->minExpectedPublicIds
           );
@@ -66,7 +66,7 @@ class PurgeFileGenerator
           return;
         }
 
-        $this->logger->info('Loading known IDs from solr Index.');
+        $this->logger->info('Loading known IDs from Solr Index.');
         $knownData = $this->getKnownIds();
         $knownIds = $knownData['knownIds'] ?? [];
         $this->logger->info('Solr IDs loaded: ' . count($knownIds));
@@ -82,24 +82,27 @@ class PurgeFileGenerator
                 $filePath = rtrim($this->settings->targetFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $id . '.purge';
                 try {
                     if (@touch($filePath) === false) {
-                        $this->logger->warning('Failed to create purge marker for ' . $id . ' at ' . $filePath);
+                        $this->logger->warning('Failed to create purge file for ' . $id . ' at ' . $filePath);
                     } else {
                         $purgeList .= $id . "\n";
                         $written++;
                     }
                 } catch (\Throwable $e) {
-                    $this->logger->warning('Exception while creating purge marker for ' . $id . ': ' . $e->getMessage());
+                    $this->logger->warning('Exception while creating purge file for ' . $id . ': ' . $e->getMessage());
                 }
             }
         }
 
         $this->logger->info(
-          'Purge markers generation completed. Solr count: ' . count($knownIds)
-          . ', public count: ' . count($publicIds)
-          . ', markers created: ' . $written
-          . ' (folder: ' . $this->settings->targetFolder . ')');
-        $this->logger->info($purgeList);
-
+          'Purge files generation completed.' . PHP_EOL
+          . 'NFIS: ' . count($publicIds) . PHP_EOL
+          . 'Solr: ' . count($knownIds) . PHP_EOL
+          . 'Files: ' . $written . PHP_EOL
+          . 'Target: ' . $this->settings->targetFolder );
+        $this->logger->info(
+          'Objects marked to remove: '. PHP_EOL .
+          print_r($purgeList, true)
+        );
         return;
     }
     private function getPublicIds(): array
@@ -134,8 +137,8 @@ class PurgeFileGenerator
 
             if ($data === null) {
                 $loggerMessage = sprintf(
-                    'Fetching public IDs stoped.'
-                    . 'Failed to get listing at offset %d'
+                    'Fetching public IDs stoped.' . PHP_EOL
+                    . 'Failed to get listing at offset %d' . PHP_EOL
                     . 'after %d attempts.',
                     $offset,
                     $maxAttempts
@@ -146,7 +149,7 @@ class PurgeFileGenerator
 
             if ($reportedTotal === null) {
                 $reportedTotal = $data['total'] ?? null;
-                $this->logger->info('Public listing reported total: ' . ($reportedTotal ?? 'unknown'));
+                $this->logger->info('Public objects reported by API: ' . ($reportedTotal ?? 'unknown'));
             }
 
             $batch = $data['data'] ?? [];
@@ -166,7 +169,7 @@ class PurgeFileGenerator
 
     private function getKnownIds(): array
     {
-        $this->logger->debug('Loading list of known IDs from Solr system.');
+        $this->logger->debug('Loading list of known IDs from Solr.');
 
         try {
             $knownIds = [];
