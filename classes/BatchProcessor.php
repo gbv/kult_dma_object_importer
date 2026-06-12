@@ -136,6 +136,16 @@ class BatchProcessor
                         $this->mappingWriter->writeMapping($uuId, $fylrId, $adabwebId);
                         $this->mappingWriter->writeRedirect($adabwebId, $uuId);
                     }
+
+                    if ($monument->groups) {
+                      foreach ($monument->groups->group as $group) {
+                        if ($group->linkDda['url']) {
+                          $dependentObjectId = (string) $group->linkDda['url'];
+                          $this->settings->dependentObjects[$dependentObjectId] = true;
+                        }
+                      }
+                    }
+
                     if ($monument->images) {
                         $this->logger->debug('XML enthält Bilder.');
                         $downloadImageDirPath = $this->settings->targetFolder . $id . '_media';

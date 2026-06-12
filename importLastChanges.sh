@@ -4,9 +4,12 @@
 set -euo pipefail
 
 #define directories
-LOGDIR="/opt/digiverso/kult_dma_object_importer/logs"
-HOTDIR="/opt/digiverso/viewer/hotfolder/"
-COLDDIR="/opt/digiverso/viewer/coldfolder/"
+SCRIPT_DIR=$(dirname "$0")
+#BASE_DIR="/opt/denkmalatlas/digiverso/viewer"
+BASE_DIR="/opt/digiverso/viewer"
+LOGDIR="$SCRIPT_DIR/logs"
+HOTDIR="$BASE_DIR/hotfolder/"
+COLDDIR="$BASE_DIR/coldfolder/"
 
 # log results
 LOGDATE=$(date +%F)
@@ -66,8 +69,25 @@ if [ -z "$(ls -A "$HOTDIR")" ] && [ -z "$(ls -A "$COLDDIR")" ]; then
   DATE=$(date -d "yesterday" +%F)
   echo "[$(date)] Set Date to yesterday: $DATE"
 
-  /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php --limit=100 --from="$DATE" --force-images
+  #/usr/bin/php "$SCRIPT_DIR/run.php" --limit=100 --from="$DATE" --skip-images --no-purge --level=debug
+  /usr/bin/php "$SCRIPT_DIR/run.php" --limit=100 --from="$DATE" --force-images
   echo "[$(date)] Got latest changes."
+
+  dependent_objects_file="$SCRIPT_DIR/config/dependentObjects.txt"
+  if [ -s "$dependent_objects_file" ]; then
+    echo "[$(date)] Objects found. Will make a copy before processing."
+    cp "$dependent_objects_file" "$SCRIPT_DIR/config/dependentObjects.$(date +"%y-%m-%d_%H:%M:%S").txt"
+    echo "[$(date)] Processing dependent objects from $dependent_objects_file."
+    mapfile -t uuids < "$dependent_objects_file"
+    for uuid in "${uuids[@]}"; do
+      if [ -n "$uuid" ]; then
+        echo "[$(date)] Running dependent import for uuid: $uuid"
+        /usr/bin/php "$SCRIPT_DIR/run.php" --skip-images --no-purge --uuid="$uuid"
+      fi
+    done
+  else
+    echo "[$(date)] No dependent objects found in $dependent_objects_file."
+  fi
 
   find "$COLDDIR" -maxdepth 1 -type d -name '*_media' \
     -exec mv -t "$HOTDIR" {} +

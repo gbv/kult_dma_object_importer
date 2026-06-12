@@ -118,6 +118,15 @@ $batchProcessor = new BatchProcessor(
   $startTime
 );
 
+$settings->dependentObjects = array_keys($settings->dependentObjects);
+$logger->info('Collected unique dependent objects: ' . count($settings->dependentObjects));
+$dependentObjectsFile = __DIR__ . '/config/dependentObjects.txt';
+file_put_contents($dependentObjectsFile, implode(PHP_EOL, $settings->dependentObjects) . PHP_EOL);
+$logger->info('Dependent objects written to: ' . $dependentObjectsFile);
+if (!empty($settings->dependentObjects)) {
+    $logger->debug('dependentObjects: ' . PHP_EOL . implode(PHP_EOL, $settings->dependentObjects));
+}
+
 $elapsed = microtime(true) - $startTime;
 
 $loggerMessage = sprintf(

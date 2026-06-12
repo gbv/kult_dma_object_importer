@@ -42,6 +42,7 @@ class SettingsManager
   public string $startFrom;
   public string $uuid;
   public int $minExpectedPublicIds;
+  public array $dependentObjects = [];
 
   public function __construct($argv)
   {
