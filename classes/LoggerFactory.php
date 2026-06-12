@@ -49,7 +49,8 @@ class LoggerFactory
             true,
             true
         );
-        $logger->pushHandler($bufferHandler);
+        // uncomment to send log with mail
+        //$logger->pushHandler($bufferHandler);
         return $logger;
     }
 }
