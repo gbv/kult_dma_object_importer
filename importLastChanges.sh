@@ -16,8 +16,8 @@ echo "[$(date)] importLastChanges.sh started."
 echo "[$(date)] Logfile created."
 
 # send logfile per mail when script ends (success or error)
-#LOG_RECIPIENT="${LOG_RECIPIENT:-goobi-viewer-support@lists.gbv.de}"
-LOG_RECIPIENT="${LOG_RECIPIENT:-tilo.neumann@gbv.de}"
+LOG_RECIPIENT="${LOG_RECIPIENT:-goobi-viewer-support@lists.gbv.de}"
+#LOG_RECIPIENT="${LOG_RECIPIENT:-tilo.neumann@gbv.de}"
 LOG_SENDER="${LOG_SENDER:-no-reply@gbv.de}"
 SENDMAIL_BIN="${SENDMAIL_BIN:-/usr/sbin/sendmail}"
 SENDMAIL_ARGS="${SENDMAIL_ARGS:--t -oi}"
