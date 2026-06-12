@@ -96,9 +96,9 @@ if [ -z "$(ls -A "$HOTDIR")" ] && [ -z "$(ls -A "$COLDDIR")" ]; then
   chown -R tomcat:tomcat "$HOTDIR"
   echo "[$(date)] Tomcat own media files now."
 
-  find "$COLDDIR" -maxdepth 1 -type f -name '*.xml' \
-    -exec mv -t "$HOTDIR" {} +
-  echo "[$(date)] Hotfolder filled with import documents."
+  find "$COLDDIR" -maxdepth 1 -mindepth 1 -type f -print0 | xargs -0 -I {} mv {} "$HOTDIR"
+
+  echo "[$(date)] Hotfolder filled with exported documents."
 
 else
   echo "[$(date)] Error. Target directories are not empty. Import stopped."
