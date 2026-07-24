@@ -70,7 +70,7 @@ if [ -z "$(ls -A "$HOTDIR")" ] && [ -z "$(ls -A "$COLDDIR")" ]; then
   echo "[$(date)] Set Date to yesterday: $DATE"
 
   #/usr/bin/php "$SCRIPT_DIR/run.php" --limit=100 --from="$DATE" --skip-images --no-purge --level=debug
-  /usr/bin/php "$SCRIPT_DIR/run.php" --limit=100 --from="$DATE" --force-images
+  /usr/bin/php "$SCRIPT_DIR/run.php" --limit=10 --from="$DATE" --force-images
   echo "[$(date)] Got latest changes."
 
   dependent_objects_file="$SCRIPT_DIR/config/dependentObjects.txt"
