@@ -82,7 +82,7 @@ if [ -z "$(ls -A "$HOTDIR")" ] && [ -z "$(ls -A "$COLDDIR")" ]; then
     for uuid in "${uuids[@]}"; do
       if [ -n "$uuid" ]; then
         echo "[$(date)] Running dependent import for uuid: $uuid"
-        /usr/bin/php "$SCRIPT_DIR/run.php" --skip-images --no-purge --uuid="$uuid"
+        /usr/bin/php "$SCRIPT_DIR/run.php" --skip-images --no-purge --level=warning --uuid="$uuid"
       fi
     done
   else
