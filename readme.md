@@ -23,6 +23,7 @@ sudo /usr/bin/php /opt/digiverso/kult_dma_object_importer/run.php
 
 --uuid
 --preselect
+--from-list
 --skip-images
 --force-images
 --id-mapping
@@ -68,6 +69,10 @@ if not set, all public objects will be requested
 ### --preselect
 set without value to get only objects stored by system id in code \
 if not set, all public objects will be requested
+
+### --from-list
+request each ID from config/updateList.txt separately using the single-object export endpoint \
+each line is sent as the `uuid` parameter; unlike `--preselect`, this does not scan all objects first
 
 ### --skip-images
 do not get _media files, just create pure denkxweb files \

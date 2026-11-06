@@ -33,6 +33,15 @@ $logger->info(
   print_r($settings->startParameter, true)
 );
 
+if (!empty($settings->uuid) && $settings->fromList) {
+  $logger->error('--uuid and --from-list cannot be used together.');
+  exit(1);
+}
+if ($settings->fromList && count(array_filter($settings->updateList, fn($id) => trim($id) !== '')) === 0) {
+  $logger->error('Cannot import from list: config/updateList.txt is empty or missing.');
+  exit(1);
+}
+
 $logger->debug('Initialize guzzle as request client.');
 $client = new Client([
   'base_uri' => $settings->projectUrl,
@@ -98,6 +107,8 @@ $startTime = microtime(true);
 
 if ( !empty($settings->uuid) ) {
     $logger->debug('Starting single object import for uuid: ' . $settings->uuid);
+} elseif ($settings->fromList) {
+    $logger->info('Starting import from updateList.txt with ' . count($settings->updateList) . ' IDs.');
 } else {
     $logger->debug('Starting the batch process. Batchsize: ' . ($settings->batchSize));
 }

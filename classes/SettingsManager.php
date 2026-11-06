@@ -31,6 +31,7 @@ class SettingsManager
   public string $xmlHeader;
   public string $monumentsNameSpace;
   public bool $updateById;
+  public bool $fromList;
   public bool $skipImage;
   public bool $forceImage;
   public bool $idMapping;
@@ -93,6 +94,7 @@ class SettingsManager
     // todo: validate parameters and stop script on error
     // invert flags - a given flag parameter has false as value
     $this->updateById = isset($parameterSettings["preselect"]);
+    $this->fromList = isset($parameterSettings["from-list"]);
     $this->skipImage = isset($parameterSettings["skip-images"]);
     $this->forceImage = isset($parameterSettings["force-images"]);
     $this->idMapping = isset($parameterSettings["id-mapping"]);

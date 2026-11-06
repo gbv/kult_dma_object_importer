@@ -40,12 +40,27 @@ class BatchProcessor
       float $startTime): array
     {
         $batchFinished = false;
+        $listRequestIndex = 0;
         while (!$batchFinished) {
             // Check if uuid is provided for single object import
             if ( !empty($this->settings->uuid) ) {
                 $endIndex = $startIndex;  // For single object, start and end index are the same
                 $url = $this->settings->exportSingleObjectUrl . '?uuid=' . urlencode($this->settings->uuid);
                 $this->logger->debug('Single object import. Request to ' . $url);
+            } elseif ($this->settings->fromList) {
+                if ($listRequestIndex >= count($this->updateList)) {
+                    $batchFinished = true;
+                    break;
+                }
+                $requestedId = trim((string) $this->updateList[$listRequestIndex]);
+                $listRequestIndex++;
+                if ($requestedId === '') {
+                    $this->logger->warning('Skipping empty ID in updateList.txt.');
+                    continue;
+                }
+                $endIndex = $startIndex;
+                $url = $this->settings->exportSingleObjectUrl . '?uuid=' . urlencode($requestedId);
+                $this->logger->debug('List object import for ID ' . $requestedId . '. Request to ' . $url);
             } else {
                 // Normal batch import
                 $endIndex = $startIndex + $this->settings->batchSize;
@@ -77,8 +92,15 @@ class BatchProcessor
                     $this->logger->warning("Request attempt {$attempt} failed: " . $t->getMessage());
                     if ($attempt >= $maxRetries) {
                         $this->logger->error("All {$maxRetries} attempts failed for URL: {$url}");
-                        $startIndex += $this->settings->batchSize;
-                        $this->logger->warning('Skipping to next batch due to repeated request errors. New startIndex: ' . $startIndex);
+                        if ($this->settings->fromList) {
+                            $startIndex++;
+                            $this->logger->warning('Skipping to next ID in updateList.txt after repeated request errors. New startIndex: ' . $startIndex);
+                        } elseif (!empty($this->settings->uuid)) {
+                            $batchFinished = true;
+                        } else {
+                            $startIndex += $this->settings->batchSize;
+                            $this->logger->warning('Skipping to next batch due to repeated request errors. New startIndex: ' . $startIndex);
+                        }
                         continue 2;
                     }
                     sleep($delaySeconds);
@@ -125,7 +147,9 @@ class BatchProcessor
                     $adabwebId = "0";
                 }
                 $id = $objectId;
-                $validId = $this->settings->updateById ? in_array($fylrId, $this->updateList) : true;
+                $validId = $this->settings->updateById && !$this->settings->fromList
+                    ? in_array($fylrId, $this->updateList)
+                    : true;
                 if ($validId) {
                     if($this->settings->missingImagesOnly) {
                       $needUpdate = false;
@@ -203,6 +227,12 @@ class BatchProcessor
             // For single object import, stop after processing
             if ( !empty($this->settings->uuid) ) {
                 $batchFinished = true;
+            } elseif ($this->settings->fromList) {
+                $startIndex++;
+                $this->logger->info('Completed list request. Reached ' . $monumentsCounter . ' Objects.');
+                if ($listRequestIndex >= count($this->updateList)) {
+                    $batchFinished = true;
+                }
             } else {
                 // For batch import, continue with next batch
                 $elapsed = microtime(true) - $startTime;

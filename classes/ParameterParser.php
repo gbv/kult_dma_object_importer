@@ -16,6 +16,7 @@ class ParameterParser
             "level:",
             "uuid:",
             "preselect",
+            "from-list",
             "skip-images",
             "force-images",
             "id-mapping",
